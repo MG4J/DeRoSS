@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="ASCII"?>
+<henshin:Module xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:henshin="http://www.eclipse.org/emf/2011/Henshin" xmi:id="_CC0_QAVYEfGE3shL354w0g" name="TwoShuttleDriveModule" description="=== HenshinRuleModifier Output ===&#xA;Source rule: TwoShuttleDrive&#xA;&#xA;[Delta-Shift Operation]&#xA;  Backward steps = 1&#xA;  Found 1 passive shuttle(s)&#xA;&#xA;  Processing: y:Shuttle&#xA;    Original position: s1:Track&#xA;    New position: t_back_1:Track&#xA;    Created tracks (LHS+RHS with mapping): t_back_1&#xA;    Updated edges:&#xA;      - LHS: y:Shuttle --at--> t_back_1:Track&#xA;      - RHS: y:Shuttle --at--> t_back_1:Track&#xA;&#xA;">
+  <imports href="../models/ecoreModel.ecore#/"/>
+  <units xsi:type="henshin:Rule" xmi:id="_CC0_QQVYEfGE3shL354w0g" name="TwoShuttleDrive" description="=== HenshinRuleModifier Output ===&#xA;Source rule: TwoShuttleDrive&#xA;&#xA;[Delta-Shift Operation]&#xA;  Backward steps = 1&#xA;  Found 1 passive shuttle(s)&#xA;&#xA;  Processing: y:Shuttle&#xA;    Original position: s1:Track&#xA;    New position: t_back_1:Track&#xA;    Created tracks (LHS+RHS with mapping): t_back_1&#xA;    Updated edges:&#xA;      - LHS: y:Shuttle --at--> t_back_1:Track&#xA;      - RHS: y:Shuttle --at--> t_back_1:Track&#xA;&#xA;">
+    <lhs xmi:id="_CC0_QgVYEfGE3shL354w0g" name="Lhs">
+      <nodes xmi:id="_CC0_QwVYEfGE3shL354w0g" name="root" outgoing="_CC0_TwVYEfGE3shL354w0g _CC0_UAVYEfGE3shL354w0g _CC0_UQVYEfGE3shL354w0g _CC0_UgVYEfGE3shL354w0g _CC0_UwVYEfGE3shL354w0g _CC0_VAVYEfGE3shL354w0g _CC0_VQVYEfGE3shL354w0g _CC0_VgVYEfGE3shL354w0g _CC0_XAVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Model"/>
+      </nodes>
+      <nodes xmi:id="_CC0_RAVYEfGE3shL354w0g" name="t1" incoming="_CC0_TwVYEfGE3shL354w0g _CC0_WwVYEfGE3shL354w0g" outgoing="_CC0_VwVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="_CC0_RQVYEfGE3shL354w0g" name="t2" incoming="_CC0_UAVYEfGE3shL354w0g _CC0_VwVYEfGE3shL354w0g" outgoing="_CC0_WAVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="_CC0_RgVYEfGE3shL354w0g" name="t3" incoming="_CC0_UQVYEfGE3shL354w0g _CC0_WAVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="_CC0_RwVYEfGE3shL354w0g" name="x" incoming="_CC0_VQVYEfGE3shL354w0g" outgoing="_CC0_WwVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Shuttle"/>
+        <attributes xmi:id="_CC0_SAVYEfGE3shL354w0g" value="DRIVE">
+          <type href="../models/ecoreModel.ecore#//Shuttle/mode"/>
+        </attributes>
+      </nodes>
+      <nodes xmi:id="_CC0_SQVYEfGE3shL354w0g" name="s1" incoming="_CC0_UgVYEfGE3shL354w0g _CC0_XQVYEfGE3shL354w0g" outgoing="_CC0_WQVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="_CC0_SgVYEfGE3shL354w0g" name="s2" incoming="_CC0_UwVYEfGE3shL354w0g _CC0_WQVYEfGE3shL354w0g" outgoing="_CC0_WgVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="_CC0_SwVYEfGE3shL354w0g" name="s3" incoming="_CC0_VAVYEfGE3shL354w0g _CC0_WgVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="_CC0_TAVYEfGE3shL354w0g" name="y" incoming="_CC0_VgVYEfGE3shL354w0g" outgoing="_CC0_XgVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Shuttle"/>
+        <attributes xmi:id="_CC0_TQVYEfGE3shL354w0g" value="DRIVE">
+          <type href="../models/ecoreModel.ecore#//Shuttle/mode"/>
+        </attributes>
+      </nodes>
+      <nodes xmi:id="_CC0_TgVYEfGE3shL354w0g" name="t_back_1" incoming="_CC0_XAVYEfGE3shL354w0g _CC0_XgVYEfGE3shL354w0g" outgoing="_CC0_XQVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <edges xmi:id="_CC0_TwVYEfGE3shL354w0g" source="_CC0_QwVYEfGE3shL354w0g" target="_CC0_RAVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="_CC0_UAVYEfGE3shL354w0g" source="_CC0_QwVYEfGE3shL354w0g" target="_CC0_RQVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="_CC0_UQVYEfGE3shL354w0g" source="_CC0_QwVYEfGE3shL354w0g" target="_CC0_RgVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="_CC0_UgVYEfGE3shL354w0g" source="_CC0_QwVYEfGE3shL354w0g" target="_CC0_SQVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="_CC0_UwVYEfGE3shL354w0g" source="_CC0_QwVYEfGE3shL354w0g" target="_CC0_SgVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="_CC0_VAVYEfGE3shL354w0g" source="_CC0_QwVYEfGE3shL354w0g" target="_CC0_SwVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="_CC0_VQVYEfGE3shL354w0g" source="_CC0_QwVYEfGE3shL354w0g" target="_CC0_RwVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Model/shuttles"/>
+      </edges>
+      <edges xmi:id="_CC0_VgVYEfGE3shL354w0g" source="_CC0_QwVYEfGE3shL354w0g" target="_CC0_TAVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Model/shuttles"/>
+      </edges>
+      <edges xmi:id="_CC0_VwVYEfGE3shL354w0g" source="_CC0_RAVYEfGE3shL354w0g" target="_CC0_RQVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="_CC0_WAVYEfGE3shL354w0g" source="_CC0_RQVYEfGE3shL354w0g" target="_CC0_RgVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="_CC0_WQVYEfGE3shL354w0g" source="_CC0_SQVYEfGE3shL354w0g" target="_CC0_SgVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="_CC0_WgVYEfGE3shL354w0g" source="_CC0_SgVYEfGE3shL354w0g" target="_CC0_SwVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="_CC0_WwVYEfGE3shL354w0g" source="_CC0_RwVYEfGE3shL354w0g" target="_CC0_RAVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Shuttle/at"/>
+      </edges>
+      <edges xmi:id="_CC0_XAVYEfGE3shL354w0g" source="_CC0_QwVYEfGE3shL354w0g" target="_CC0_TgVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="_CC0_XQVYEfGE3shL354w0g" source="_CC0_TgVYEfGE3shL354w0g" target="_CC0_SQVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="_CC0_XgVYEfGE3shL354w0g" source="_CC0_TAVYEfGE3shL354w0g" target="_CC0_TgVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Shuttle/at"/>
+      </edges>
+    </lhs>
+    <rhs xmi:id="_CC0_XwVYEfGE3shL354w0g" name="Rhs">
+      <nodes xmi:id="_CC0_YAVYEfGE3shL354w0g" name="root" outgoing="_CC0_bAVYEfGE3shL354w0g _CC0_bQVYEfGE3shL354w0g _CC0_bgVYEfGE3shL354w0g _CC0_bwVYEfGE3shL354w0g _CC0_cAVYEfGE3shL354w0g _CC0_cQVYEfGE3shL354w0g _CC0_cgVYEfGE3shL354w0g _CC0_cwVYEfGE3shL354w0g _CC0_eQVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Model"/>
+      </nodes>
+      <nodes xmi:id="_CC0_YQVYEfGE3shL354w0g" name="t1" incoming="_CC0_bAVYEfGE3shL354w0g" outgoing="_CC0_dAVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="_CC0_YgVYEfGE3shL354w0g" name="t2" incoming="_CC0_bQVYEfGE3shL354w0g _CC0_dAVYEfGE3shL354w0g _CC0_eAVYEfGE3shL354w0g" outgoing="_CC0_dQVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="_CC0_YwVYEfGE3shL354w0g" name="t3" incoming="_CC0_bgVYEfGE3shL354w0g _CC0_dQVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="_CC0_ZAVYEfGE3shL354w0g" name="x" incoming="_CC0_cgVYEfGE3shL354w0g" outgoing="_CC0_eAVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Shuttle"/>
+        <attributes xmi:id="_CC0_ZQVYEfGE3shL354w0g" value="DRIVE">
+          <type href="../models/ecoreModel.ecore#//Shuttle/mode"/>
+        </attributes>
+      </nodes>
+      <nodes xmi:id="_CC0_ZgVYEfGE3shL354w0g" name="s1" incoming="_CC0_bwVYEfGE3shL354w0g _CC0_egVYEfGE3shL354w0g" outgoing="_CC0_dgVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="_CC0_ZwVYEfGE3shL354w0g" name="s2" incoming="_CC0_cAVYEfGE3shL354w0g _CC0_dgVYEfGE3shL354w0g" outgoing="_CC0_dwVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="_CC0_aAVYEfGE3shL354w0g" name="s3" incoming="_CC0_cQVYEfGE3shL354w0g _CC0_dwVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="_CC0_aQVYEfGE3shL354w0g" name="y" incoming="_CC0_cwVYEfGE3shL354w0g" outgoing="_CC0_ewVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Shuttle"/>
+        <attributes xmi:id="_CC0_agVYEfGE3shL354w0g" value="DRIVE">
+          <type href="../models/ecoreModel.ecore#//Shuttle/mode"/>
+        </attributes>
+      </nodes>
+      <nodes xmi:id="_CC0_awVYEfGE3shL354w0g" name="t_back_1" incoming="_CC0_eQVYEfGE3shL354w0g _CC0_ewVYEfGE3shL354w0g" outgoing="_CC0_egVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <edges xmi:id="_CC0_bAVYEfGE3shL354w0g" source="_CC0_YAVYEfGE3shL354w0g" target="_CC0_YQVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="_CC0_bQVYEfGE3shL354w0g" source="_CC0_YAVYEfGE3shL354w0g" target="_CC0_YgVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="_CC0_bgVYEfGE3shL354w0g" source="_CC0_YAVYEfGE3shL354w0g" target="_CC0_YwVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="_CC0_bwVYEfGE3shL354w0g" source="_CC0_YAVYEfGE3shL354w0g" target="_CC0_ZgVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="_CC0_cAVYEfGE3shL354w0g" source="_CC0_YAVYEfGE3shL354w0g" target="_CC0_ZwVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="_CC0_cQVYEfGE3shL354w0g" source="_CC0_YAVYEfGE3shL354w0g" target="_CC0_aAVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="_CC0_cgVYEfGE3shL354w0g" source="_CC0_YAVYEfGE3shL354w0g" target="_CC0_ZAVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Model/shuttles"/>
+      </edges>
+      <edges xmi:id="_CC0_cwVYEfGE3shL354w0g" source="_CC0_YAVYEfGE3shL354w0g" target="_CC0_aQVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Model/shuttles"/>
+      </edges>
+      <edges xmi:id="_CC0_dAVYEfGE3shL354w0g" source="_CC0_YQVYEfGE3shL354w0g" target="_CC0_YgVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="_CC0_dQVYEfGE3shL354w0g" source="_CC0_YgVYEfGE3shL354w0g" target="_CC0_YwVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="_CC0_dgVYEfGE3shL354w0g" source="_CC0_ZgVYEfGE3shL354w0g" target="_CC0_ZwVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="_CC0_dwVYEfGE3shL354w0g" source="_CC0_ZwVYEfGE3shL354w0g" target="_CC0_aAVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="_CC0_eAVYEfGE3shL354w0g" source="_CC0_ZAVYEfGE3shL354w0g" target="_CC0_YgVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Shuttle/at"/>
+      </edges>
+      <edges xmi:id="_CC0_eQVYEfGE3shL354w0g" source="_CC0_YAVYEfGE3shL354w0g" target="_CC0_awVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="_CC0_egVYEfGE3shL354w0g" source="_CC0_awVYEfGE3shL354w0g" target="_CC0_ZgVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="_CC0_ewVYEfGE3shL354w0g" source="_CC0_aQVYEfGE3shL354w0g" target="_CC0_awVYEfGE3shL354w0g">
+        <type href="../models/ecoreModel.ecore#//Shuttle/at"/>
+      </edges>
+    </rhs>
+    <mappings xmi:id="_CC0_fAVYEfGE3shL354w0g" origin="_CC0_QwVYEfGE3shL354w0g" image="_CC0_YAVYEfGE3shL354w0g"/>
+    <mappings xmi:id="_CC0_fQVYEfGE3shL354w0g" origin="_CC0_RAVYEfGE3shL354w0g" image="_CC0_YQVYEfGE3shL354w0g"/>
+    <mappings xmi:id="_CC0_fgVYEfGE3shL354w0g" origin="_CC0_RQVYEfGE3shL354w0g" image="_CC0_YgVYEfGE3shL354w0g"/>
+    <mappings xmi:id="_CC0_fwVYEfGE3shL354w0g" origin="_CC0_RgVYEfGE3shL354w0g" image="_CC0_YwVYEfGE3shL354w0g"/>
+    <mappings xmi:id="_CC0_gAVYEfGE3shL354w0g" origin="_CC0_RwVYEfGE3shL354w0g" image="_CC0_ZAVYEfGE3shL354w0g"/>
+    <mappings xmi:id="_CC0_gQVYEfGE3shL354w0g" origin="_CC0_SQVYEfGE3shL354w0g" image="_CC0_ZgVYEfGE3shL354w0g"/>
+    <mappings xmi:id="_CC0_ggVYEfGE3shL354w0g" origin="_CC0_SgVYEfGE3shL354w0g" image="_CC0_ZwVYEfGE3shL354w0g"/>
+    <mappings xmi:id="_CC0_gwVYEfGE3shL354w0g" origin="_CC0_SwVYEfGE3shL354w0g" image="_CC0_aAVYEfGE3shL354w0g"/>
+    <mappings xmi:id="_CC0_hAVYEfGE3shL354w0g" origin="_CC0_TAVYEfGE3shL354w0g" image="_CC0_aQVYEfGE3shL354w0g"/>
+    <mappings xmi:id="_CC0_hQVYEfGE3shL354w0g" origin="_CC0_TgVYEfGE3shL354w0g" image="_CC0_awVYEfGE3shL354w0g"/>
+  </units>
+</henshin:Module>

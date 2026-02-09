@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <!-- View category -->
+   <extension point="org.eclipse.ui.views">
+      <category
+            id="henshin.plugin.category"
+            name="Henshin"/>
+
+      <view
+            id="henshin.plugin.view"
+            name="ZZZ Henshin Rule Modifier"
+            category="henshin.plugin.category"
+            class="henshin.plugin.views.HenshinPluginView"
+            restorable="true"/>
+   </extension>
+
+   <!-- Force plugin to load on startup -->
+   <extension point="org.eclipse.ui.startup">
+      <startup class="henshin.plugin.views.Startup"/>
+   </extension>
+
+</plugin>

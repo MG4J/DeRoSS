@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="AmEm" nsURI="http://AmEm/1.0" nsPrefix="AmEm">
+  <eClassifiers xsi:type="ecore:EClass" name="Shuttle">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="at" eType="#//Track"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="mode" eType="#//Mode"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sx1" eType="#//RsX1"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sx2" eType="#//RsX2"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sx3" eType="#//RsX3"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sx4" eType="#//RsX4"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sx5" eType="#//RsX5"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sy1" eType="#//RsY1"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sy2" eType="#//RsY2"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sy3" eType="#//RsY3"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sy4" eType="#//RsY4"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sy5" eType="#//RsY5"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="m1" eType="#//Meta1"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="m2" eType="#//Meta2"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="m3" eType="#//Meta3"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="m4" eType="#//Meta4"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="m5" eType="#//Meta5"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Track">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="next" eType="#//Track"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        iD="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="stX1" eType="#//RsX1"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="stX2" eType="#//RsX2"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="stX3" eType="#//RsX3"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="stX4" eType="#//RsX4"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="stX5" eType="#//RsX5"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="stY1" eType="#//RsY1"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="stY2" eType="#//RsY2"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="stY3" eType="#//RsY3"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="stY4" eType="#//RsY4"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="stY5" eType="#//RsY5"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Connection">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="source" eType="#//Shuttle"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="target" eType="#//Shuttle"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Conflict">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="at" upperBound="-1" eType="#//Track"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Model">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="shuttles" upperBound="-1"
+        eType="#//Shuttle" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="tracks" upperBound="-1"
+        eType="#//Track" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="conflicts" upperBound="-1"
+        eType="#//Conflict" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="rx1" upperBound="-1" eType="#//RsX1"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="rx2" upperBound="-1" eType="#//RsX2"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="rx3" upperBound="-1" eType="#//RsX3"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="rx4" upperBound="-1" eType="#//RsX4"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="rx5" upperBound="-1" eType="#//RsX5"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="f" upperBound="-1" eType="#//Meta"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="ry1" upperBound="-1" eType="#//RsY1"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="ry2" upperBound="-1" eType="#//RsY2"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="ry3" upperBound="-1" eType="#//RsY3"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="ry4" upperBound="-1" eType="#//RsY4"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="ry5" upperBound="-1" eType="#//RsY5"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="f1" upperBound="-1" eType="#//Meta1"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="f2" upperBound="-1" eType="#//Meta2"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="f3" upperBound="-1" eType="#//Meta3"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="f4" upperBound="-1" eType="#//Meta4"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="f5" upperBound="-1" eType="#//Meta5"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RsX1">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="plan" eType="#//Track"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="mx1" eType="#//Meta1"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="btx" eType="#//RsX1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RsX2">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="plan" eType="#//Track"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="mx2" eType="#//Meta2"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RsX3">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="plan" eType="#//Track"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="mx3" eType="#//Meta3"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RsX4">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="plan" eType="#//Track"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="mx4" eType="#//Meta4"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RsX5">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="plan" eType="#//Track"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="mx5" eType="#//Meta5"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="Mode">
+    <eLiterals name="BRAKE" literal="BRAKE"/>
+    <eLiterals name="DRIVE" value="1"/>
+    <eLiterals name="STOP" value="2"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RsY1">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="plan" eType="#//Track"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="my1" eType="#//Meta1"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="bty" eType="#//RsY1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RsY2">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="plan" eType="#//Track"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="my2" eType="#//Meta2"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RsY3">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="plan" eType="#//Track"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="my3" eType="#//Meta3"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RsY4">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="plan" eType="#//Track"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="my4" eType="#//Meta4"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RsY5">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="plan" eType="#//Track"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="my5" eType="#//Meta5"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Meta">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx1" eType="#//RsX1"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx2" eType="#//RsX2"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx3" eType="#//RsX3"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx4" eType="#//RsX4"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx5" eType="#//RsX5"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy1" eType="#//RsY1"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy2" eType="#//RsY2"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy3" eType="#//RsY3"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy4" eType="#//RsY4"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy5" eType="#//RsY5"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="s0" eType="#//Shuttle"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="will" eType="#//Track"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Meta1">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx1" eType="#//RsX1"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx2" eType="#//RsX2"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx3" eType="#//RsX3"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx4" eType="#//RsX4"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx5" eType="#//RsX5"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy1" eType="#//RsY1"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy2" eType="#//RsY2"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy3" eType="#//RsY3"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy4" eType="#//RsY4"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy5" eType="#//RsY5"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="s0" eType="#//Shuttle"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="will1" eType="#//Track"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Meta2">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx1" eType="#//RsX1"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx2" eType="#//RsX2"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx3" eType="#//RsX3"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx4" eType="#//RsX4"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx5" eType="#//RsX5"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy1" eType="#//RsY1"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy2" eType="#//RsY2"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy3" eType="#//RsY3"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy4" eType="#//RsY4"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy5" eType="#//RsY5"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="s0" eType="#//Shuttle"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="will2" eType="#//Track"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Meta3">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx1" eType="#//RsX1"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx2" eType="#//RsX2"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx3" eType="#//RsX3"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx4" eType="#//RsX4"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx5" eType="#//RsX5"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy1" eType="#//RsY1"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy2" eType="#//RsX2"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy3" eType="#//RsX3"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy4" eType="#//RsX4"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy5" eType="#//RsY5"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="s0" eType="#//Shuttle"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="will3" eType="#//Track"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Meta4">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx1" eType="#//RsX1"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx2" eType="#//RsX2"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx3" eType="#//RsX3"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx4" eType="#//RsX4"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx5" eType="#//RsX5"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy1" eType="#//RsY1"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy2" eType="#//RsY2"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy3" eType="#//RsY3"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy4" eType="#//RsY4"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy5" eType="#//RsY5"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="s0" eType="#//Shuttle"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="will4" eType="#//Track"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Meta5">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx1" eType="#//RsX1"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx2" eType="#//RsX2"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx3" eType="#//RsX3"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx4" eType="#//RsX4"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fx5" eType="#//RsX5"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy1" eType="#//RsY1"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy2" eType="#//RsY2"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy3" eType="#//RsY3"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy4" eType="#//RsY4"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fy5" eType="#//RsY5"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="s0" eType="#//Shuttle"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="will5" eType="#//Track"/>
+  </eClassifiers>
+</ecore:EPackage>

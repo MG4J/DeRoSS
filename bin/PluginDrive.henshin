@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<henshin:Module
+    xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:henshin="http://www.eclipse.org/emf/2011/Henshin"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmi:id="module_PluginDrive"
+    name="PluginDriveModule">
+
+  <!-- Passe den Pfad ggf. an: ../models/ecoreModel.ecore#/ -->
+<imports href="../models/ecoreModel.ecore#/"/>
+
+
+
+  <units xsi:type="henshin:Rule"
+         xmi:id="rule_PluginDrive"
+         name="PluginDrive">
+
+    <parameters xmi:id="p_x" name="x">
+      <type xsi:type="ecore:EClass" href="../models/ecoreModel.ecore#//Shuttle"/>
+    </parameters>
+
+    <parameters xmi:id="p_t1" name="t1">
+      <type xsi:type="ecore:EClass" href="../models/ecoreModel.ecore#//Track"/>
+    </parameters>
+
+    <parameters xmi:id="p_t2" name="t2">
+      <type xsi:type="ecore:EClass" href="../models/ecoreModel.ecore#//Track"/>
+    </parameters>
+
+    <!-- ================= LHS ================= -->
+    <lhs xmi:id="lhs_PluginDrive" name="Lhs">
+
+      <nodes xmi:id="lhs_root" name="root">
+        <type href="../models/ecoreModel.ecore#//Model"/>
+      </nodes>
+
+      <nodes xmi:id="lhs_t1" name="t1">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+
+      <nodes xmi:id="lhs_t2" name="t2">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+
+      <nodes xmi:id="lhs_t3" name="t3">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+
+      <nodes xmi:id="lhs_x" name="x">
+        <type href="../models/ecoreModel.ecore#//Shuttle"/>
+        <attributes xmi:id="lhs_x_mode" value="DRIVE">
+          <type href="../models/ecoreModel.ecore#//Shuttle/mode"/>
+        </attributes>
+      </nodes>
+
+      <!-- root contains tracks + shuttle -->
+      <edges xmi:id="e_root_tracks1" source="lhs_root" target="lhs_t1">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="e_root_tracks2" source="lhs_root" target="lhs_t2">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="e_root_tracks3" source="lhs_root" target="lhs_t3">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="e_root_shuttles" source="lhs_root" target="lhs_x">
+        <type href="../models/ecoreModel.ecore#//Model/shuttles"/>
+      </edges>
+
+      <!-- topology + position -->
+      <edges xmi:id="e_t1_next_t2" source="lhs_t1" target="lhs_t2">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="e_t2_next_t3" source="lhs_t2" target="lhs_t3">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="e_x_at_t1" source="lhs_x" target="lhs_t1">
+        <type href="../models/ecoreModel.ecore#//Shuttle/at"/>
+      </edges>
+
+      <!-- KEINE RsX1-Knoten in Input -->
+    </lhs>
+
+    <!-- ================= RHS ================= -->
+    <rhs xmi:id="rhs_PluginDrive" name="Rhs">
+
+      <nodes xmi:id="rhs_root" name="root">
+        <type href="../models/ecoreModel.ecore#//Model"/>
+      </nodes>
+
+      <nodes xmi:id="rhs_t1" name="t1">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+
+      <nodes xmi:id="rhs_t2" name="t2">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+
+      <nodes xmi:id="rhs_t3" name="t3">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+
+      <nodes xmi:id="rhs_x" name="x">
+        <type href="../models/ecoreModel.ecore#//Shuttle"/>
+        <attributes xmi:id="rhs_x_mode" value="DRIVE">
+          <type href="../models/ecoreModel.ecore#//Shuttle/mode"/>
+        </attributes>
+      </nodes>
+
+      <!-- root contains tracks + shuttle -->
+      <edges xmi:id="re_root_tracks1" source="rhs_root" target="rhs_t1">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="re_root_tracks2" source="rhs_root" target="rhs_t2">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="re_root_tracks3" source="rhs_root" target="rhs_t3">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="re_root_shuttles" source="rhs_root" target="rhs_x">
+        <type href="../models/ecoreModel.ecore#//Model/shuttles"/>
+      </edges>
+
+      <!-- topology unchanged -->
+      <edges xmi:id="re_t1_next_t2" source="rhs_t1" target="rhs_t2">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="re_t2_next_t3" source="rhs_t2" target="rhs_t3">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+
+      <!-- THE EFFECT: x moves from t1 to t2 -->
+      <edges xmi:id="re_x_at_t2" source="rhs_x" target="rhs_t2">
+        <type href="../models/ecoreModel.ecore#//Shuttle/at"/>
+      </edges>
+
+      <!-- IMPORTANT: Output of the INPUT rule still contains NO RsX1 here.
+           (RsX1 will be added by your plugin modifier later.) -->
+    </rhs>
+
+    <!-- ================= MAPPINGS ================= -->
+    <mappings xmi:id="map_root" origin="lhs_root" image="rhs_root"/>
+    <mappings xmi:id="map_t1"   origin="lhs_t1"   image="rhs_t1"/>
+    <mappings xmi:id="map_t2"   origin="lhs_t2"   image="rhs_t2"/>
+    <mappings xmi:id="map_t3"   origin="lhs_t3"   image="rhs_t3"/>
+    <mappings xmi:id="map_x"    origin="lhs_x"    image="rhs_x"/>
+
+  </units>
+</henshin:Module>

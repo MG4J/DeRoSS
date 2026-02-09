@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<henshin:Module
+    xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:henshin="http://www.eclipse.org/emf/2011/Henshin"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmi:id="module_NBrakeR"
+    name="NBrakeRModule">
+
+  <imports href="../inputRules/ecoreModel.ecore#/"/>
+
+  <units xsi:type="henshin:Rule"
+         xmi:id="rule_NBrakeR"
+         name="NBrakeR">
+
+    <parameters xmi:id="p_x" name="x">
+      <type xsi:type="ecore:EClass" href="../inputRules/ecoreModel.ecore#//Shuttle"/>
+    </parameters>
+
+    <parameters xmi:id="p_t1" name="t1">
+      <type xsi:type="ecore:EClass" href="../inputRules/ecoreModel.ecore#//Track"/>
+    </parameters>
+
+    <parameters xmi:id="p_t2" name="t2">
+      <type xsi:type="ecore:EClass" href="../inputRules/ecoreModel.ecore#//Track"/>
+    </parameters>
+
+    <!-- ================= LHS ================= -->
+    <lhs xmi:id="lhs1" name="Lhs">
+
+      <nodes xmi:id="lhs_root" name="root">
+        <type href="../inputRules/ecoreModel.ecore#//Model"/>
+      </nodes>
+
+      <nodes xmi:id="lhs_t1" name="t1">
+        <type href="../inputRules/ecoreModel.ecore#//Track"/>
+      </nodes>
+
+      <nodes xmi:id="lhs_t2" name="t2">
+        <type href="../inputRules/ecoreModel.ecore#//Track"/>
+      </nodes>
+
+      <nodes xmi:id="lhs_t3" name="t3">
+        <type href="../inputRules/ecoreModel.ecore#//Track"/>
+      </nodes>
+
+      <nodes xmi:id="lhs_x" name="x">
+        <type href="../inputRules/ecoreModel.ecore#//Shuttle"/>
+        <attributes xmi:id="lhs_x_mode" value="DRIVE">
+          <!-- must reference the EAttribute, NOT the enum -->
+          <type href="../inputRules/ecoreModel.ecore#//Shuttle/mode"/>
+        </attributes>
+      </nodes>
+
+    </lhs>
+
+    <!-- ================= RHS ================= -->
+    <rhs xmi:id="rhs1" name="Rhs">
+
+      <nodes xmi:id="rhs_root" name="root">
+        <type href="../inputRules/ecoreModel.ecore#//Model"/>
+      </nodes>
+
+      <nodes xmi:id="rhs_t1" name="t1">
+        <type href="../inputRules/ecoreModel.ecore#//Track"/>
+      </nodes>
+
+      <nodes xmi:id="rhs_t2" name="t2">
+        <type href="../inputRules/ecoreModel.ecore#//Track"/>
+      </nodes>
+
+      <nodes xmi:id="rhs_t3" name="t3">
+        <type href="../inputRules/ecoreModel.ecore#//Track"/>
+      </nodes>
+
+      <nodes xmi:id="rhs_x" name="x">
+        <type href="../inputRules/ecoreModel.ecore#//Shuttle"/>
+        <attributes xmi:id="rhs_x_mode" value="BRAKE">
+          <type href="../inputRules/ecoreModel.ecore#//Shuttle/mode"/>
+        </attributes>
+      </nodes>
+
+      <!-- IMPORTANT: Input rule contains NO RsX1 nodes -->
+
+    </rhs>
+
+    <!-- ================= MAPPINGS ================= -->
+    <mappings xmi:id="map_root" origin="lhs_root" image="rhs_root"/>
+    <mappings xmi:id="map_t1"   origin="lhs_t1"   image="rhs_t1"/>
+    <mappings xmi:id="map_t2"   origin="lhs_t2"   image="rhs_t2"/>
+    <mappings xmi:id="map_t3"   origin="lhs_t3"   image="rhs_t3"/>
+    <mappings xmi:id="map_x"    origin="lhs_x"    image="rhs_x"/>
+
+  </units>
+
+</henshin:Module>

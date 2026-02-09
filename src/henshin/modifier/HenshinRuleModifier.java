@@ -1,0 +1,973 @@
+package henshin.modifier;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.eclipse.emf.common.util.TreeIterator;
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EReference;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emf.ecore.xmi.XMIResource;
+import org.eclipse.emf.henshin.model.Edge;
+import org.eclipse.emf.henshin.model.Graph;
+import org.eclipse.emf.henshin.model.HenshinFactory;
+import org.eclipse.emf.henshin.model.HenshinPackage;
+import org.eclipse.emf.henshin.model.Mapping;
+import org.eclipse.emf.henshin.model.Module;
+import org.eclipse.emf.henshin.model.Node;
+import org.eclipse.emf.henshin.model.Rule;
+import org.eclipse.emf.henshin.model.Unit;
+import org.eclipse.emf.henshin.model.resource.HenshinResourceFactory;
+import org.eclipse.emf.henshin.model.resource.HenshinResourceSet;
+
+public class HenshinRuleModifier {
+
+    // ============================================================
+    // PUBLIC ENTRY POINT
+    // ============================================================
+
+    public static void modifyRuleInModule(
+            File inputHenshinFile,
+            String outputRuleName,
+            SampleAlgorithm algorithm,
+            File outputHenshinFile
+    ) throws IOException {
+
+        if (inputHenshinFile == null || !inputHenshinFile.exists()) {
+            throw new IllegalArgumentException("Input henshin file not found: " + inputHenshinFile);
+        }
+        if (outputHenshinFile == null) {
+            throw new IllegalArgumentException("Output henshin file is null");
+        }
+        if (outputRuleName == null || outputRuleName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Output rule name must not be empty.");
+        }
+
+        // ------------------------------------------------------------
+        // 1) Load input module
+        // ------------------------------------------------------------
+
+        HenshinPackage.eINSTANCE.eClass();
+        Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap()
+                .putIfAbsent("henshin", new HenshinResourceFactory());
+
+        String baseDir = inputHenshinFile.getParentFile().getAbsolutePath();
+        HenshinResourceSet rs = new HenshinResourceSet(baseDir);
+
+        URI inUri = URI.createFileURI(inputHenshinFile.getAbsolutePath());
+        Resource inRes = rs.getResource(inUri, true);
+
+        if (inRes.getContents().isEmpty() || !(inRes.getContents().get(0) instanceof Module)) {
+            throw new IllegalStateException("No henshin:Module found in " + inputHenshinFile);
+        }
+
+        Module inModule = (Module) inRes.getContents().get(0);
+
+        // resolve imports/proxies
+        EcoreUtil.resolveAll(rs);
+
+        // Repair edge source/target references that the XMI loader leaves null
+        repairEdgeReferences(inRes, inputHenshinFile);
+
+        Rule inRule = findRulePreferName(inModule, "PluginDrive");
+        if (inRule == null) {
+            throw new IllegalStateException("No Rule found in input module (expected PluginDrive or at least one rule).");
+        }
+
+        System.out.println("[HenshinRuleModifier] Loaded rule '" + inRule.getName()
+                + "' LHS edges=" + inRule.getLhs().getEdges().size()
+                + " RHS edges=" + inRule.getRhs().getEdges().size());
+
+        // Verify input edges after repair
+        verifyEdges("INPUT LHS", inRule.getLhs());
+        verifyEdges("INPUT RHS", inRule.getRhs());
+
+        // ------------------------------------------------------------
+        // 2) Copy rule into new output module
+        // ------------------------------------------------------------
+
+        Rule outRule = EcoreUtil.copy(inRule);
+        outRule.setName(outputRuleName);
+
+        Module outModule = HenshinFactory.eINSTANCE.createModule();
+        outModule.setName(inModule.getName());
+        outModule.getImports().addAll(inModule.getImports());
+        outModule.getUnits().add(outRule);
+
+        System.out.println("[HenshinRuleModifier] Copied rule '" + outRule.getName()
+                + "' LHS edges=" + outRule.getLhs().getEdges().size()
+                + " RHS edges=" + outRule.getRhs().getEdges().size());
+
+        verifyEdges("COPY LHS", outRule.getLhs());
+        verifyEdges("COPY RHS", outRule.getRhs());
+
+        // ------------------------------------------------------------
+        // 3) Apply Node Extension OR δ-Shift Operation
+        // ------------------------------------------------------------
+        int k = algorithm != null ? algorithm.getK() : 0;
+        int backwardSteps = algorithm != null ? algorithm.getBackwardSteps() : 0;
+        String nodeTypeName = algorithm != null ? algorithm.getNodeTypeName() : null;
+
+        StringBuilder modifications = new StringBuilder();
+        modifications.append("=== HenshinRuleModifier Output ===\n");
+        modifications.append("Source rule: ").append(inRule.getName()).append("\n\n");
+
+        if (k > 0 && nodeTypeName != null) {
+            String extDesc = applyNodeExtension(outModule, outRule, k, nodeTypeName);
+            modifications.append(extDesc);
+        }
+
+        if (backwardSteps > 0) {
+            String shiftDesc = applyPassiveShuttleBackwardMovement(outModule, outRule, backwardSteps);
+            modifications.append(shiftDesc);
+        }
+
+        if (k == 0 && backwardSteps == 0) {
+            modifications.append("No modifications applied (k=0, backwardSteps=0).\n");
+        }
+
+        // Set descriptions on module and rule
+        outModule.setDescription(modifications.toString());
+        outRule.setDescription(modifications.toString());
+
+        // ------------------------------------------------------------
+        // 4) Save output
+        // ------------------------------------------------------------
+        Resource outRes = rs.createResource(URI.createFileURI(outputHenshinFile.getAbsolutePath()));
+        outRes.getContents().add(outModule);
+        outRes.save(null);
+
+        System.out.println("[HenshinRuleModifier] Saved output to " + outputHenshinFile.getAbsolutePath());
+    }
+
+    // ============================================================
+    // FIND COMPATIBLE NODE TYPES FOR UI
+    // ============================================================
+
+    /**
+     * Find node types in the metamodel that are compatible with Shuttle for planning.
+     * A type is compatible if:
+     * 1. Shuttle has a reference to it
+     * 2. It has a self-reference (for chaining multiple instances)
+     * 3. It has a reference to Track (for planning)
+     *
+     * @return List of String arrays: [typeName, shuttleRefName, selfRefName, trackRefName]
+     */
+    public static List<String[]> findCompatibleNodeTypes(File inputHenshinFile) throws IOException {
+        List<String[]> result = new ArrayList<>();
+
+        if (inputHenshinFile == null || !inputHenshinFile.exists()) {
+            throw new IllegalArgumentException("Input henshin file not found: " + inputHenshinFile);
+        }
+
+        // Load the module to get the metamodel
+        HenshinPackage.eINSTANCE.eClass();
+        Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap()
+                .putIfAbsent("henshin", new HenshinResourceFactory());
+
+        String baseDir = inputHenshinFile.getParentFile().getAbsolutePath();
+        HenshinResourceSet rs = new HenshinResourceSet(baseDir);
+
+        URI inUri = URI.createFileURI(inputHenshinFile.getAbsolutePath());
+        Resource inRes = rs.getResource(inUri, true);
+
+        if (inRes.getContents().isEmpty() || !(inRes.getContents().get(0) instanceof Module)) {
+            throw new IllegalStateException("No henshin:Module found in " + inputHenshinFile);
+        }
+
+        Module inModule = (Module) inRes.getContents().get(0);
+        EcoreUtil.resolveAll(rs);
+
+        EPackage pkg = resolveMetamodelPackage(inModule);
+        if (pkg == null) {
+            throw new IllegalStateException("Could not resolve metamodel EPackage.");
+        }
+
+        EClass shuttleCls = (EClass) pkg.getEClassifier("Shuttle");
+        EClass trackCls = (EClass) pkg.getEClassifier("Track");
+
+        if (shuttleCls == null || trackCls == null) {
+            throw new IllegalStateException("Metamodel must have Shuttle and Track classes.");
+        }
+
+        // Iterate through all references from Shuttle
+        for (EReference shuttleRef : shuttleCls.getEAllReferences()) {
+            EClass targetType = shuttleRef.getEReferenceType();
+            if (targetType == null) continue;
+
+            // Skip if target is Track or Shuttle itself
+            if (sameEClassName(targetType, trackCls) || sameEClassName(targetType, shuttleCls)) {
+                continue;
+            }
+
+            // Check if target type has a self-reference (for chaining)
+            EReference selfRef = null;
+            for (EReference ref : targetType.getEAllReferences()) {
+                if (sameEClassName(ref.getEReferenceType(), targetType)) {
+                    selfRef = ref;
+                    break;
+                }
+            }
+            if (selfRef == null) continue;
+
+            // Check if target type has a reference to Track (for planning)
+            EReference trackRef = null;
+            for (EReference ref : targetType.getEAllReferences()) {
+                if (sameEClassName(ref.getEReferenceType(), trackCls)) {
+                    trackRef = ref;
+                    break;
+                }
+            }
+            if (trackRef == null) continue;
+
+            // This type is compatible!
+            result.add(new String[] {
+                targetType.getName(),
+                shuttleRef.getName(),
+                selfRef.getName(),
+                trackRef.getName()
+            });
+
+            System.out.println("[findCompatibleNodeTypes] Found: " + targetType.getName()
+                + " (Shuttle." + shuttleRef.getName()
+                + " -> " + targetType.getName() + "." + selfRef.getName()
+                + " -> Track via " + trackRef.getName() + ")");
+        }
+
+        return result;
+    }
+
+    // ============================================================
+    // POST-LOAD REPAIR: fix Edge source/target from raw XMI IDREFs
+    // ============================================================
+
+    /**
+     * The Henshin XMI loader sometimes fails to resolve Edge.source and
+     * Edge.target IDREF attributes, leaving them null.  This method parses
+     * the raw XML to extract those ID references and wires them up manually
+     * using the resource's xmi:id &rarr; EObject mapping.
+     */
+    private static void repairEdgeReferences(Resource resource, File xmlFile) {
+        // 1) Build a map: xmi:id -> loaded EObject
+        Map<String, EObject> idMap = new HashMap<>();
+
+        if (resource instanceof XMIResource) {
+            XMIResource xmiRes = (XMIResource) resource;
+            TreeIterator<EObject> it = resource.getAllContents();
+            while (it.hasNext()) {
+                EObject obj = it.next();
+                String id = xmiRes.getID(obj);
+                if (id != null && !id.isEmpty()) {
+                    idMap.put(id, obj);
+                }
+            }
+        }
+
+        if (idMap.isEmpty()) {
+            System.out.println("[repairEdgeRefs] No xmi:id entries found in resource — cannot repair.");
+            return;
+        }
+        System.out.println("[repairEdgeRefs] ID map has " + idMap.size() + " entries.");
+
+        // 2) Parse the raw XML to get edge source/target attribute values
+        try {
+            javax.xml.parsers.DocumentBuilderFactory dbf =
+                    javax.xml.parsers.DocumentBuilderFactory.newInstance();
+            // non-namespace-aware so we can use simple attribute names
+            dbf.setNamespaceAware(false);
+            org.w3c.dom.Document doc = dbf.newDocumentBuilder().parse(xmlFile);
+
+            org.w3c.dom.NodeList edgeElements = doc.getElementsByTagName("edges");
+            int repaired = 0;
+
+            for (int i = 0; i < edgeElements.getLength(); i++) {
+                org.w3c.dom.Element edgeEl = (org.w3c.dom.Element) edgeElements.item(i);
+                String edgeId   = edgeEl.getAttribute("xmi:id");
+                String sourceId = edgeEl.getAttribute("source");
+                String targetId = edgeEl.getAttribute("target");
+
+                if (edgeId == null || edgeId.isEmpty()) continue;
+
+                EObject edgeObj = idMap.get(edgeId);
+                if (!(edgeObj instanceof Edge)) continue;
+                Edge edge = (Edge) edgeObj;
+
+                if (edge.getSource() == null && sourceId != null && !sourceId.isEmpty()) {
+                    EObject srcObj = idMap.get(sourceId);
+                    if (srcObj instanceof Node) {
+                        edge.setSource((Node) srcObj);
+                        repaired++;
+                    }
+                }
+
+                if (edge.getTarget() == null && targetId != null && !targetId.isEmpty()) {
+                    EObject tgtObj = idMap.get(targetId);
+                    if (tgtObj instanceof Node) {
+                        edge.setTarget((Node) tgtObj);
+                        repaired++;
+                    }
+                }
+            }
+
+            System.out.println("[repairEdgeRefs] Repaired " + repaired + " edge->node references.");
+
+        } catch (Exception ex) {
+            System.out.println("[repairEdgeRefs] XML parse error: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
+
+    // ============================================================
+    // CORE LOGIC: add planning nodes on RHS (generic for any compatible type)
+    // ============================================================
+
+    private static String applyNodeExtension(Module module, Rule rule, int k, String nodeTypeName) {
+        StringBuilder desc = new StringBuilder();
+        desc.append("[Node Extension]\n");
+        desc.append("  Node type: ").append(nodeTypeName).append("\n");
+        desc.append("  Planning horizon k = ").append(k).append("\n");
+
+        Graph lhs = rule.getLhs();
+        Graph rhs = rule.getRhs();
+        if (lhs == null || rhs == null) throw new IllegalStateException("Rule has no LHS/RHS.");
+
+        EPackage pkg = resolveMetamodelPackage(module);
+        if (pkg == null) {
+            throw new IllegalStateException("Could not resolve metamodel EPackage.");
+        }
+
+        EClass modelCls   = (EClass) pkg.getEClassifier("Model");
+        EClass shuttleCls = (EClass) pkg.getEClassifier("Shuttle");
+        EClass trackCls   = (EClass) pkg.getEClassifier("Track");
+        EClass nodeTypeCls = (EClass) pkg.getEClassifier(nodeTypeName);
+
+        if (nodeTypeCls == null) {
+            throw new IllegalStateException("Node type '" + nodeTypeName + "' not found in metamodel.");
+        }
+
+        // Find references dynamically
+        EReference shuttle_at = (EReference) shuttleCls.getEStructuralFeature("at");
+        EReference track_next = (EReference) trackCls.getEStructuralFeature("next");
+
+        // Find reference from Shuttle to the selected node type
+        EReference shuttle_to_nodeType = findReferenceToType(shuttleCls, nodeTypeCls);
+        if (shuttle_to_nodeType == null) {
+            throw new IllegalStateException("No reference from Shuttle to " + nodeTypeName + " found.");
+        }
+
+        // Find self-reference on the node type (for chaining)
+        EReference nodeType_chain = findSelfReference(nodeTypeCls);
+        if (nodeType_chain == null) {
+            throw new IllegalStateException("No self-reference (chaining) found on " + nodeTypeName + ".");
+        }
+
+        // Find reference from node type to Track (for planning)
+        EReference nodeType_plan = findReferenceToType(nodeTypeCls, trackCls);
+        if (nodeType_plan == null) {
+            throw new IllegalStateException("No reference from " + nodeTypeName + " to Track found.");
+        }
+
+        // Find reference from Model to the node type (for containment)
+        EReference model_to_nodeType = findReferenceToType(modelCls, nodeTypeCls);
+
+        desc.append("  References used:\n");
+        desc.append("    - Shuttle." + shuttle_to_nodeType.getName() + " -> " + nodeTypeName + "\n");
+        desc.append("    - " + nodeTypeName + "." + nodeType_chain.getName() + " -> " + nodeTypeName + " (chain)\n");
+        desc.append("    - " + nodeTypeName + "." + nodeType_plan.getName() + " -> Track (plan)\n");
+        if (model_to_nodeType != null) {
+            desc.append("    - Model." + model_to_nodeType.getName() + " -> " + nodeTypeName + " (containment)\n");
+        }
+
+        Node rhsRoot = findNodeByNameOrType(rhs, "root", "Model");
+        if (rhsRoot == null) throw new IllegalStateException("RHS root Model node not found.");
+
+        Node activeShuttle = findActiveShuttleRhs(rule, shuttle_at, shuttleCls);
+        if (activeShuttle == null) {
+            throw new IllegalStateException("Could not detect active shuttle");
+        }
+        System.out.println("[NodeExtension] Active shuttle: " + safeNode(activeShuttle));
+        desc.append("  Active shuttle: ").append(safeNode(activeShuttle)).append("\n");
+
+        Node tAct = getSingleTarget(rhs, activeShuttle, shuttle_at);
+        if (tAct == null) throw new IllegalStateException("Active shuttle has no RHS 'at' edge.");
+        desc.append("  Shuttle position (RHS): ").append(safeNode(tAct)).append("\n");
+
+        // Create k nodes of the selected type
+        String nodePrefix = nodeTypeName.toLowerCase();
+        List<Node> createdNodes = new ArrayList<>(k);
+        List<String> createdNodeNames = new ArrayList<>();
+
+        for (int i = 1; i <= k; i++) {
+            Node n = HenshinFactory.eINSTANCE.createNode();
+            n.setType(nodeTypeCls);
+            n.setName(nodePrefix + "_" + i);
+            rhs.getNodes().add(n);
+
+            // Add containment edge from Model if reference exists
+            if (model_to_nodeType != null) {
+                addEdgeToGraph(rhs, makeEdge(rhsRoot, n, model_to_nodeType));
+            }
+            createdNodes.add(n);
+            createdNodeNames.add(nodePrefix + "_" + i);
+        }
+
+        // Connect shuttle to first node
+        addEdgeToGraph(rhs, makeEdge(activeShuttle, createdNodes.get(0), shuttle_to_nodeType));
+
+        // Chain the nodes together
+        for (int i = 0; i < createdNodes.size() - 1; i++) {
+            addEdgeToGraph(rhs, makeEdge(createdNodes.get(i), createdNodes.get(i + 1), nodeType_chain));
+        }
+
+        desc.append("  Created nodes (RHS only): ").append(String.join(", ", createdNodeNames)).append("\n");
+        desc.append("  Edges added:\n");
+        desc.append("    - ").append(safeNode(activeShuttle)).append(" --").append(shuttle_to_nodeType.getName())
+            .append("--> ").append(nodePrefix).append("_1\n");
+        for (int i = 0; i < createdNodes.size() - 1; i++) {
+            desc.append("    - ").append(nodePrefix).append("_").append(i + 1)
+                .append(" --").append(nodeType_chain.getName()).append("--> ")
+                .append(nodePrefix).append("_").append(i + 2).append("\n");
+        }
+
+        // Add plan edges to tracks
+        for (int i = 1; i <= createdNodes.size(); i++) {
+            Node target = advanceByNext(rhs, tAct, track_next, i);
+            if (target != null) {
+                addEdgeToGraph(rhs, makeEdge(createdNodes.get(i - 1), target, nodeType_plan));
+                desc.append("    - ").append(nodePrefix).append("_").append(i)
+                    .append(" --").append(nodeType_plan.getName()).append("--> ")
+                    .append(safeNode(target)).append("\n");
+            }
+        }
+
+        desc.append("\n");
+        return desc.toString();
+    }
+
+    /**
+     * Find a reference from sourceClass to targetClass.
+     */
+    private static EReference findReferenceToType(EClass sourceClass, EClass targetClass) {
+        for (EReference ref : sourceClass.getEAllReferences()) {
+            if (sameEClassName(ref.getEReferenceType(), targetClass)) {
+                return ref;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Find a self-reference on the given class (reference whose type is the class itself).
+     */
+    private static EReference findSelfReference(EClass cls) {
+        for (EReference ref : cls.getEAllReferences()) {
+            if (sameEClassName(ref.getEReferenceType(), cls)) {
+                return ref;
+            }
+        }
+        return null;
+    }
+
+    // ============================================================
+    // δ-SHIFT OPERATION: PASSIVE SHUTTLE BACKWARD MOVEMENT
+    // ============================================================
+
+    private static int generatedTrackCounter = 0;
+
+    private static String applyPassiveShuttleBackwardMovement(Module module, Rule rule, int backwardSteps) {
+        StringBuilder desc = new StringBuilder();
+        desc.append("[Delta-Shift Operation]\n");
+        desc.append("  Backward steps = ").append(backwardSteps).append("\n");
+
+        Graph lhs = rule.getLhs();
+        Graph rhs = rule.getRhs();
+        if (lhs == null || rhs == null) throw new IllegalStateException("Rule has no LHS/RHS.");
+
+        EPackage pkg = resolveMetamodelPackage(module);
+        if (pkg == null) {
+            throw new IllegalStateException("Could not resolve AmEm EPackage.");
+        }
+
+        EClass modelCls   = (EClass) pkg.getEClassifier("Model");
+        EClass shuttleCls = (EClass) pkg.getEClassifier("Shuttle");
+        EClass trackCls   = (EClass) pkg.getEClassifier("Track");
+        EClass rsx1Cls    = (EClass) pkg.getEClassifier("RsX1");
+
+        EReference model_tracks = (EReference) modelCls.getEStructuralFeature("tracks");
+        EReference shuttle_at   = (EReference) shuttleCls.getEStructuralFeature("at");
+        EReference shuttle_sx1  = (EReference) shuttleCls.getEStructuralFeature("sx1");
+        EReference track_next   = (EReference) trackCls.getEStructuralFeature("next");
+        EReference rsx1_plan    = (EReference) rsx1Cls.getEStructuralFeature("plan");
+        EReference rsx1_btx     = (EReference) rsx1Cls.getEStructuralFeature("btx");
+
+        Node lhsRoot = findNodeByNameOrType(lhs, "root", "Model");
+        Node rhsRoot = findNodeByNameOrType(rhs, "root", "Model");
+        if (lhsRoot == null || rhsRoot == null) {
+            throw new IllegalStateException("LHS/RHS root Model node not found.");
+        }
+
+        // Find passive shuttles
+        List<Node[]> passiveShuttles = findPassiveShuttles(rule, shuttle_at, shuttleCls);
+        if (passiveShuttles.isEmpty()) {
+            System.out.println("[δ-Shift] No passive shuttles found - nothing to move.");
+            desc.append("  No passive shuttles found - no changes made.\n\n");
+            return desc.toString();
+        }
+
+        System.out.println("[δ-Shift] Found " + passiveShuttles.size() + " passive shuttle(s). Moving backward by " + backwardSteps + " steps.");
+        desc.append("  Found ").append(passiveShuttles.size()).append(" passive shuttle(s)\n");
+
+        for (Node[] pair : passiveShuttles) {
+            Node lhsShuttle = pair[0];
+            Node rhsShuttle = pair[1];
+
+            System.out.println("[δ-Shift] Processing passive shuttle: " + safeNode(rhsShuttle));
+            desc.append("\n  Processing: ").append(safeNode(rhsShuttle)).append("\n");
+
+            // Get current track
+            Node currentLhsTrack = getSingleTarget(lhs, lhsShuttle, shuttle_at);
+            Node currentRhsTrack = getSingleTarget(rhs, rhsShuttle, shuttle_at);
+
+            if (currentLhsTrack == null || currentRhsTrack == null) {
+                System.out.println("[δ-Shift] Passive shuttle has no 'at' edge - skipping.");
+                desc.append("    Skipped (no 'at' edge)\n");
+                continue;
+            }
+
+            String originalTrack = safeNode(currentLhsTrack);
+            System.out.println("[δ-Shift] Current track: LHS=" + safeNode(currentLhsTrack) + ", RHS=" + safeNode(currentRhsTrack));
+            desc.append("    Original position: ").append(originalTrack).append("\n");
+
+            List<String> createdTracks = new ArrayList<>();
+
+            // Navigate backward
+            for (int i = 1; i <= backwardSteps; i++) {
+                Node prevLhs = findPreviousTrack(lhs, currentLhsTrack, track_next);
+                Node prevRhs = findPreviousTrack(rhs, currentRhsTrack, track_next);
+
+                if (prevLhs == null || prevRhs == null) {
+                    // Need to create new track
+                    generatedTrackCounter++;
+                    String newTrackName = "t_back_" + generatedTrackCounter;
+
+                    System.out.println("[δ-Shift] Creating new track: " + newTrackName);
+                    createdTracks.add(newTrackName);
+
+                    Node[] newTracks = createTrackWithMapping(rule, newTrackName, trackCls, model_tracks, lhsRoot, rhsRoot);
+                    Node newLhsTrack = newTracks[0];
+                    Node newRhsTrack = newTracks[1];
+
+                    // Add next edges: new track -> current track
+                    addEdgeToGraph(lhs, makeEdge(newLhsTrack, currentLhsTrack, track_next));
+                    addEdgeToGraph(rhs, makeEdge(newRhsTrack, currentRhsTrack, track_next));
+
+                    prevLhs = newLhsTrack;
+                    prevRhs = newRhsTrack;
+                }
+
+                currentLhsTrack = prevLhs;
+                currentRhsTrack = prevRhs;
+            }
+
+            System.out.println("[δ-Shift] New track position: LHS=" + safeNode(currentLhsTrack) + ", RHS=" + safeNode(currentRhsTrack));
+            desc.append("    New position: ").append(safeNode(currentLhsTrack)).append("\n");
+
+            if (!createdTracks.isEmpty()) {
+                desc.append("    Created tracks (LHS+RHS with mapping): ").append(String.join(", ", createdTracks)).append("\n");
+            }
+
+            // Update shuttle's at edge
+            removeEdge(lhs, lhsShuttle, shuttle_at);
+            removeEdge(rhs, rhsShuttle, shuttle_at);
+            addEdgeToGraph(lhs, makeEdge(lhsShuttle, currentLhsTrack, shuttle_at));
+            addEdgeToGraph(rhs, makeEdge(rhsShuttle, currentRhsTrack, shuttle_at));
+
+            desc.append("    Updated edges:\n");
+            desc.append("      - LHS: ").append(safeNode(lhsShuttle)).append(" --at--> ").append(safeNode(currentLhsTrack)).append("\n");
+            desc.append("      - RHS: ").append(safeNode(rhsShuttle)).append(" --at--> ").append(safeNode(currentRhsTrack)).append("\n");
+
+            // Handle existing RsX1 nodes (if any)
+            boolean hasRsX1 = getSingleTarget(rhs, rhsShuttle, shuttle_sx1) != null;
+            if (hasRsX1) {
+                desc.append("    Adjusted existing RsX1 plan edges\n");
+            }
+            adjustRsX1PlanEdgesForPassiveShuttle(rhs, rhsShuttle, currentRhsTrack,
+                    shuttle_sx1, rsx1_btx, rsx1_plan, track_next);
+        }
+
+        desc.append("\n");
+        return desc.toString();
+    }
+
+    /**
+     * Find passive shuttles: shuttles where 'at' edge points to the same track in LHS and RHS.
+     * Returns list of [lhsShuttle, rhsShuttle] pairs.
+     */
+    private static List<Node[]> findPassiveShuttles(Rule rule, EReference shuttleAtRef, EClass shuttleCls) {
+        Graph lhs = rule.getLhs();
+        Graph rhs = rule.getRhs();
+        List<Node[]> result = new ArrayList<>();
+
+        for (Mapping m : rule.getMappings()) {
+            Node l = m.getOrigin();
+            Node r = m.getImage();
+            if (l == null || r == null) continue;
+
+            if (!sameEClassName(r.getType(), shuttleCls)) continue;
+
+            Node lhsAt = getSingleTarget(lhs, l, shuttleAtRef);
+            Node rhsAt = getSingleTarget(rhs, r, shuttleAtRef);
+
+            if (lhsAt != null && rhsAt != null) {
+                // Check if they point to the same track (via mapping)
+                Node mappedLhsAt = findMappedNode(rule, lhsAt);
+                if (mappedLhsAt == rhsAt) {
+                    // Same track = passive shuttle
+                    result.add(new Node[]{l, r});
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Find the RHS node that the given LHS node maps to.
+     */
+    private static Node findMappedNode(Rule rule, Node lhsNode) {
+        for (Mapping m : rule.getMappings()) {
+            if (m.getOrigin() == lhsNode) {
+                return m.getImage();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Find the track whose 'next' edge points to the given track (i.e., the previous track).
+     */
+    private static Node findPreviousTrack(Graph g, Node currentTrack, EReference trackNextRef) {
+        for (Edge e : getAllEdges(g)) {
+            if (sameFeature(e.getType(), trackNextRef) && e.getTarget() == currentTrack) {
+                return e.getSource();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Create a new track node in both LHS and RHS with a mapping between them.
+     * Returns [lhsNode, rhsNode].
+     */
+    private static Node[] createTrackWithMapping(Rule rule, String trackName, EClass trackCls,
+            EReference modelTracksRef, Node lhsRoot, Node rhsRoot) {
+
+        Graph lhs = rule.getLhs();
+        Graph rhs = rule.getRhs();
+
+        // Create LHS track
+        Node lhsTrack = HenshinFactory.eINSTANCE.createNode();
+        lhsTrack.setType(trackCls);
+        lhsTrack.setName(trackName);
+        lhs.getNodes().add(lhsTrack);
+
+        // Create RHS track
+        Node rhsTrack = HenshinFactory.eINSTANCE.createNode();
+        rhsTrack.setType(trackCls);
+        rhsTrack.setName(trackName);
+        rhs.getNodes().add(rhsTrack);
+
+        // Add model --tracks--> track edges
+        addEdgeToGraph(lhs, makeEdge(lhsRoot, lhsTrack, modelTracksRef));
+        addEdgeToGraph(rhs, makeEdge(rhsRoot, rhsTrack, modelTracksRef));
+
+        // Create mapping
+        Mapping mapping = HenshinFactory.eINSTANCE.createMapping();
+        mapping.setOrigin(lhsTrack);
+        mapping.setImage(rhsTrack);
+        rule.getMappings().add(mapping);
+
+        return new Node[]{lhsTrack, rhsTrack};
+    }
+
+    /**
+     * Remove an edge from a graph. Properly disconnects bidirectional references.
+     */
+    private static void removeEdge(Graph g, Node source, EReference type) {
+        Edge toRemove = null;
+        for (Edge e : getAllEdges(g)) {
+            if (e.getSource() == source && sameFeature(e.getType(), type)) {
+                toRemove = e;
+                break;
+            }
+        }
+        if (toRemove != null) {
+            // Must disconnect source/target first to break bidirectional refs
+            // (Node.outgoing <-> Edge.source, Node.incoming <-> Edge.target)
+            toRemove.setSource(null);
+            toRemove.setTarget(null);
+            g.getEdges().remove(toRemove);
+        }
+    }
+
+    /**
+     * Adjust existing RsX1 nodes' plan edges when the passive shuttle moves backward.
+     * Each RsX1 in the chain points N steps ahead of the shuttle's current position.
+     */
+    private static void adjustRsX1PlanEdgesForPassiveShuttle(Graph rhs, Node passiveShuttle,
+            Node newShuttleTrack, EReference sx1Ref, EReference btxRef,
+            EReference planRef, EReference nextRef) {
+
+        // Get the RsX1 chain starting from shuttle.sx1
+        Node rsx1 = getSingleTarget(rhs, passiveShuttle, sx1Ref);
+        if (rsx1 == null) {
+            System.out.println("[δ-Shift] No RsX1 nodes on passive shuttle - nothing to adjust.");
+            return;
+        }
+
+        System.out.println("[δ-Shift] Adjusting RsX1 plan edges for passive shuttle.");
+
+        // Walk the RsX1 chain and update plan edges
+        int planStep = 1;  // First RsX1 points 1 step ahead, second 2 steps, etc.
+        while (rsx1 != null) {
+            // Remove old plan edge
+            removeEdge(rhs, rsx1, planRef);
+
+            // Calculate new plan target: advance planStep from new shuttle position
+            Node newPlanTarget = advanceByNext(rhs, newShuttleTrack, nextRef, planStep);
+            if (newPlanTarget != null) {
+                addEdgeToGraph(rhs, makeEdge(rsx1, newPlanTarget, planRef));
+                System.out.println("[δ-Shift] RsX1 plan edge updated: " + safeNode(rsx1)
+                        + " --plan--> " + safeNode(newPlanTarget));
+            } else {
+                System.out.println("[δ-Shift] Warning: Could not find plan target for step " + planStep);
+            }
+
+            // Move to next RsX1 in chain
+            rsx1 = getSingleTarget(rhs, rsx1, btxRef);
+            planStep++;
+        }
+    }
+
+    // ============================================================
+    // ACTIVE SHUTTLE DETECTION
+    // ============================================================
+
+    private static Node findActiveShuttleRhs(Rule rule, EReference shuttleAtRef, EClass shuttleCls) {
+        Graph lhs = rule.getLhs();
+        Graph rhs = rule.getRhs();
+
+        for (Mapping m : rule.getMappings()) {
+            Node l = m.getOrigin();
+            Node r = m.getImage();
+            if (l == null || r == null) continue;
+
+            if (!sameEClassName(r.getType(), shuttleCls)) continue;
+
+            Node lhsAt = getSingleTarget(lhs, l, shuttleAtRef);
+            Node rhsAt = getSingleTarget(rhs, r, shuttleAtRef);
+
+            if (lhsAt != null && rhsAt != null && lhsAt != rhsAt) {
+                return r;
+            }
+        }
+
+        for (Node r : rhs.getNodes()) {
+            if (!sameEClassName(r.getType(), shuttleCls)) continue;
+            if (r.getName() == null) continue;
+
+            Node l = findNodeByName(lhs, r.getName());
+            if (l == null) continue;
+
+            Node lhsAt = getSingleTarget(lhs, l, shuttleAtRef);
+            Node rhsAt = getSingleTarget(rhs, r, shuttleAtRef);
+
+            if (lhsAt != null && rhsAt != null && lhsAt != rhsAt) {
+                return r;
+            }
+        }
+
+        return null;
+    }
+
+    // ============================================================
+    // METAMODEL RESOLUTION
+    // ============================================================
+
+    private static EPackage resolveMetamodelPackage(Module module) {
+        if (module == null || module.getImports() == null) return null;
+
+        for (Object imp : module.getImports()) {
+            if (imp instanceof EPackage) {
+                EPackage p = (EPackage) imp;
+                if (p.getEClassifier("Model") != null &&
+                    p.getEClassifier("Shuttle") != null &&
+                    p.getEClassifier("Track") != null &&
+                    p.getEClassifier("RsX1") != null) {
+                    return p;
+                }
+            } else if (imp instanceof EObject) {
+                EObject resolved = EcoreUtil.resolve((EObject) imp, module);
+                if (resolved instanceof EPackage) {
+                    EPackage p = (EPackage) resolved;
+                    if (p.getEClassifier("Model") != null &&
+                        p.getEClassifier("Shuttle") != null &&
+                        p.getEClassifier("Track") != null &&
+                        p.getEClassifier("RsX1") != null) {
+                        return p;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    // ============================================================
+    // EDGE HANDLING
+    // ============================================================
+
+    private static void addEdgeToGraph(Graph g, Edge e) {
+        if (g == null || e == null) return;
+        g.getEdges().add(e);
+    }
+
+    private static List<Edge> getAllEdges(Graph g) {
+        List<Edge> res = new ArrayList<>();
+        if (g == null) return res;
+
+        try {
+            res.addAll(g.getEdges());
+        } catch (Exception ignore) {}
+
+        TreeIterator<EObject> it = g.eAllContents();
+        while (it.hasNext()) {
+            EObject eo = it.next();
+            if (eo instanceof Edge) {
+                Edge e = (Edge) eo;
+                if (!res.contains(e)) res.add(e);
+            }
+        }
+        return res;
+    }
+
+    // ============================================================
+    // HELPERS
+    // ============================================================
+
+    private static boolean safeEq(String a, String b) {
+        return a == null ? b == null : a.equals(b);
+    }
+
+    private static boolean sameEClassName(EClass a, EClass b) {
+        if (a == b) return true;
+        if (a == null || b == null) return false;
+        return safeEq(a.getName(), b.getName());
+    }
+
+    private static boolean sameFeature(Object a, EReference b) {
+        if (a == b) return true;
+        if (!(a instanceof EReference) || b == null) return false;
+
+        EReference ar = (EReference) a;
+
+        if (!safeEq(ar.getName(), b.getName())) return false;
+
+        EClass ac = ar.getEContainingClass();
+        EClass bc = b.getEContainingClass();
+        if (ac == null || bc == null) return true;
+        return safeEq(ac.getName(), bc.getName());
+    }
+
+    private static Node getSingleTarget(Graph g, Node src, EReference ref) {
+        if (g == null || src == null || ref == null) return null;
+        for (Edge e : getAllEdges(g)) {
+            if (e.getSource() == src && sameFeature(e.getType(), ref)) {
+                return e.getTarget();
+            }
+        }
+        return null;
+    }
+
+    private static Node advanceByNext(Graph g, Node start, EReference nextRef, int steps) {
+        Node cur = start;
+        for (int i = 0; i < steps; i++) {
+            if (cur == null) return null;
+            cur = getSingleTarget(g, cur, nextRef);
+        }
+        return cur;
+    }
+
+    private static Edge makeEdge(Node s, Node t, EReference r) {
+        Edge e = HenshinFactory.eINSTANCE.createEdge();
+        e.setSource(s);
+        e.setTarget(t);
+        e.setType(r);
+        return e;
+    }
+
+    private static Node findNodeByNameOrType(Graph g, String name, String typeName) {
+        if (g == null) return null;
+
+        for (Node n : g.getNodes()) {
+            if (safeEq(name, n.getName())) return n;
+        }
+        for (Node n : g.getNodes()) {
+            if (n.getType() != null && safeEq(typeName, n.getType().getName())) return n;
+        }
+        return null;
+    }
+
+    private static Node findNodeByName(Graph g, String name) {
+        if (g == null || name == null) return null;
+        for (Node n : g.getNodes()) {
+            if (safeEq(name, n.getName())) return n;
+        }
+        return null;
+    }
+
+    private static Rule findRulePreferName(Module m, String preferredName) {
+        Rule firstRule = null;
+        for (Unit u : m.getUnits()) {
+            if (u instanceof Rule) {
+                Rule r = (Rule) u;
+                if (firstRule == null) firstRule = r;
+                if (preferredName != null && preferredName.equals(r.getName())) return r;
+            }
+        }
+        return firstRule;
+    }
+
+    // ============================================================
+    // VERIFICATION
+    // ============================================================
+
+    private static void verifyEdges(String label, Graph g) {
+        if (g == null) return;
+        int ok = 0, broken = 0;
+        for (Edge e : getAllEdges(g)) {
+            if (e.getSource() != null && e.getTarget() != null) {
+                ok++;
+            } else {
+                broken++;
+                System.out.println("[WARNING] " + label + " edge has null src/tgt: type="
+                        + (e.getType() != null ? e.getType().getName() : "null"));
+            }
+        }
+        System.out.println("[" + label + "] " + ok + " OK edges, " + broken + " broken edges.");
+    }
+
+    private static String safeNode(Node n) {
+        if (n == null) return "<null-node>";
+        String name = n.getName();
+        String type = (n.getType() != null ? n.getType().getName() : "nullType");
+        return (name != null ? name : "<noName>") + ":" + type;
+    }
+}

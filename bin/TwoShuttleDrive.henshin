@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<henshin:Module
+    xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:henshin="http://www.eclipse.org/emf/2011/Henshin"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmi:id="module_TwoShuttleDrive"
+    name="TwoShuttleDriveModule">
+
+  <imports href="../models/ecoreModel.ecore#/"/>
+
+  <units xsi:type="henshin:Rule"
+         xmi:id="rule_TwoShuttleDrive"
+         name="TwoShuttleDrive">
+
+    <!-- ================= LHS ================= -->
+    <lhs xmi:id="lhs_TwoShuttleDrive" name="Lhs">
+
+      <nodes xmi:id="lhs_root" name="root">
+        <type href="../models/ecoreModel.ecore#//Model"/>
+      </nodes>
+
+      <!-- ===== BRANCH 1: Active shuttle x on tracks t1 -> t2 -> t3 ===== -->
+      <nodes xmi:id="lhs_t1" name="t1">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="lhs_t2" name="t2">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="lhs_t3" name="t3">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+
+      <!-- Active shuttle x: will move from t1 to t2 -->
+      <nodes xmi:id="lhs_x" name="x">
+        <type href="../models/ecoreModel.ecore#//Shuttle"/>
+        <attributes xmi:id="lhs_x_mode" value="DRIVE">
+          <type href="../models/ecoreModel.ecore#//Shuttle/mode"/>
+        </attributes>
+      </nodes>
+
+      <!-- ===== BRANCH 2: Passive shuttle y on tracks s1 -> s2 -> s3 (disjoint) ===== -->
+      <nodes xmi:id="lhs_s1" name="s1">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="lhs_s2" name="s2">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="lhs_s3" name="s3">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+
+      <!-- Passive shuttle y: stays at s1 -->
+      <nodes xmi:id="lhs_y" name="y">
+        <type href="../models/ecoreModel.ecore#//Shuttle"/>
+        <attributes xmi:id="lhs_y_mode" value="DRIVE">
+          <type href="../models/ecoreModel.ecore#//Shuttle/mode"/>
+        </attributes>
+      </nodes>
+
+      <!-- root contains all tracks -->
+      <edges xmi:id="e_root_t1" source="lhs_root" target="lhs_t1">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="e_root_t2" source="lhs_root" target="lhs_t2">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="e_root_t3" source="lhs_root" target="lhs_t3">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="e_root_s1" source="lhs_root" target="lhs_s1">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="e_root_s2" source="lhs_root" target="lhs_s2">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="e_root_s3" source="lhs_root" target="lhs_s3">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+
+      <!-- root contains shuttles -->
+      <edges xmi:id="e_root_x" source="lhs_root" target="lhs_x">
+        <type href="../models/ecoreModel.ecore#//Model/shuttles"/>
+      </edges>
+      <edges xmi:id="e_root_y" source="lhs_root" target="lhs_y">
+        <type href="../models/ecoreModel.ecore#//Model/shuttles"/>
+      </edges>
+
+      <!-- Branch 1 topology: t1 -> t2 -> t3 -->
+      <edges xmi:id="e_t1_next_t2" source="lhs_t1" target="lhs_t2">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="e_t2_next_t3" source="lhs_t2" target="lhs_t3">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+
+      <!-- Branch 2 topology: s1 -> s2 -> s3 (completely disjoint from branch 1) -->
+      <edges xmi:id="e_s1_next_s2" source="lhs_s1" target="lhs_s2">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="e_s2_next_s3" source="lhs_s2" target="lhs_s3">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+
+      <!-- Active shuttle x at t1 -->
+      <edges xmi:id="e_x_at_t1" source="lhs_x" target="lhs_t1">
+        <type href="../models/ecoreModel.ecore#//Shuttle/at"/>
+      </edges>
+
+      <!-- Passive shuttle y at s1 -->
+      <edges xmi:id="e_y_at_s1" source="lhs_y" target="lhs_s1">
+        <type href="../models/ecoreModel.ecore#//Shuttle/at"/>
+      </edges>
+
+    </lhs>
+
+    <!-- ================= RHS ================= -->
+    <rhs xmi:id="rhs_TwoShuttleDrive" name="Rhs">
+
+      <nodes xmi:id="rhs_root" name="root">
+        <type href="../models/ecoreModel.ecore#//Model"/>
+      </nodes>
+
+      <!-- ===== BRANCH 1: tracks t1 -> t2 -> t3 ===== -->
+      <nodes xmi:id="rhs_t1" name="t1">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="rhs_t2" name="t2">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="rhs_t3" name="t3">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+
+      <!-- Active shuttle x -->
+      <nodes xmi:id="rhs_x" name="x">
+        <type href="../models/ecoreModel.ecore#//Shuttle"/>
+        <attributes xmi:id="rhs_x_mode" value="DRIVE">
+          <type href="../models/ecoreModel.ecore#//Shuttle/mode"/>
+        </attributes>
+      </nodes>
+
+      <!-- ===== BRANCH 2: tracks s1 -> s2 -> s3 (disjoint) ===== -->
+      <nodes xmi:id="rhs_s1" name="s1">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="rhs_s2" name="s2">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="rhs_s3" name="s3">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+
+      <!-- Passive shuttle y -->
+      <nodes xmi:id="rhs_y" name="y">
+        <type href="../models/ecoreModel.ecore#//Shuttle"/>
+        <attributes xmi:id="rhs_y_mode" value="DRIVE">
+          <type href="../models/ecoreModel.ecore#//Shuttle/mode"/>
+        </attributes>
+      </nodes>
+
+      <!-- root contains all tracks -->
+      <edges xmi:id="re_root_t1" source="rhs_root" target="rhs_t1">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="re_root_t2" source="rhs_root" target="rhs_t2">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="re_root_t3" source="rhs_root" target="rhs_t3">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="re_root_s1" source="rhs_root" target="rhs_s1">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="re_root_s2" source="rhs_root" target="rhs_s2">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="re_root_s3" source="rhs_root" target="rhs_s3">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+
+      <!-- root contains shuttles -->
+      <edges xmi:id="re_root_x" source="rhs_root" target="rhs_x">
+        <type href="../models/ecoreModel.ecore#//Model/shuttles"/>
+      </edges>
+      <edges xmi:id="re_root_y" source="rhs_root" target="rhs_y">
+        <type href="../models/ecoreModel.ecore#//Model/shuttles"/>
+      </edges>
+
+      <!-- Branch 1 topology unchanged -->
+      <edges xmi:id="re_t1_next_t2" source="rhs_t1" target="rhs_t2">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="re_t2_next_t3" source="rhs_t2" target="rhs_t3">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+
+      <!-- Branch 2 topology unchanged -->
+      <edges xmi:id="re_s1_next_s2" source="rhs_s1" target="rhs_s2">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="re_s2_next_s3" source="rhs_s2" target="rhs_s3">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+
+      <!-- THE EFFECT: Active shuttle x moves from t1 to t2 -->
+      <edges xmi:id="re_x_at_t2" source="rhs_x" target="rhs_t2">
+        <type href="../models/ecoreModel.ecore#//Shuttle/at"/>
+      </edges>
+
+      <!-- Passive shuttle y stays at s1 (same as LHS) -->
+      <edges xmi:id="re_y_at_s1" source="rhs_y" target="rhs_s1">
+        <type href="../models/ecoreModel.ecore#//Shuttle/at"/>
+      </edges>
+
+    </rhs>
+
+    <!-- ================= MAPPINGS ================= -->
+    <mappings xmi:id="map_root" origin="lhs_root" image="rhs_root"/>
+    <!-- Branch 1 mappings -->
+    <mappings xmi:id="map_t1" origin="lhs_t1" image="rhs_t1"/>
+    <mappings xmi:id="map_t2" origin="lhs_t2" image="rhs_t2"/>
+    <mappings xmi:id="map_t3" origin="lhs_t3" image="rhs_t3"/>
+    <mappings xmi:id="map_x"  origin="lhs_x"  image="rhs_x"/>
+    <!-- Branch 2 mappings (disjoint) -->
+    <mappings xmi:id="map_s1" origin="lhs_s1" image="rhs_s1"/>
+    <mappings xmi:id="map_s2" origin="lhs_s2" image="rhs_s2"/>
+    <mappings xmi:id="map_s3" origin="lhs_s3" image="rhs_s3"/>
+    <mappings xmi:id="map_y"  origin="lhs_y"  image="rhs_y"/>
+
+  </units>
+</henshin:Module>
