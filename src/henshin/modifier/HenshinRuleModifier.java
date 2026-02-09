@@ -529,6 +529,7 @@ public class HenshinRuleModifier {
             Node lhsShuttle = pair[0];
             Node rhsShuttle = pair[1];
 
+            String originalShuttleName = lhsShuttle.getName();
             System.out.println("[δ-Shift] Processing passive shuttle: " + safeNode(rhsShuttle));
             desc.append("\n  Processing: ").append(safeNode(rhsShuttle)).append("\n");
 
@@ -542,11 +543,12 @@ public class HenshinRuleModifier {
                 continue;
             }
 
-            String originalTrack = safeNode(currentLhsTrack);
+            String originalTrackName = currentLhsTrack.getName();
             System.out.println("[δ-Shift] Current track: LHS=" + safeNode(currentLhsTrack) + ", RHS=" + safeNode(currentRhsTrack));
-            desc.append("    Original position: ").append(originalTrack).append("\n");
+            desc.append("    Original position: ").append(safeNode(currentLhsTrack)).append("\n");
 
-            List<String> createdTracks = new ArrayList<>();
+            List<String> createdTrackNames = new ArrayList<>();
+            List<Node[]> createdTrackNodes = new ArrayList<>();  // Store for adding descriptions later
 
             // Navigate backward
             for (int i = 1; i <= backwardSteps; i++) {
@@ -559,11 +561,13 @@ public class HenshinRuleModifier {
                     String newTrackName = "t_back_" + generatedTrackCounter;
 
                     System.out.println("[δ-Shift] Creating new track: " + newTrackName);
-                    createdTracks.add(newTrackName);
+                    createdTrackNames.add(newTrackName);
 
                     Node[] newTracks = createTrackWithMapping(rule, newTrackName, trackCls, model_tracks, lhsRoot, rhsRoot);
                     Node newLhsTrack = newTracks[0];
                     Node newRhsTrack = newTracks[1];
+
+                    createdTrackNodes.add(newTracks);
 
                     // Add next edges: new track -> current track
                     addEdgeToGraph(lhs, makeEdge(newLhsTrack, currentLhsTrack, track_next));
@@ -577,11 +581,12 @@ public class HenshinRuleModifier {
                 currentRhsTrack = prevRhs;
             }
 
+            String newTrackName = currentLhsTrack.getName();
             System.out.println("[δ-Shift] New track position: LHS=" + safeNode(currentLhsTrack) + ", RHS=" + safeNode(currentRhsTrack));
             desc.append("    New position: ").append(safeNode(currentLhsTrack)).append("\n");
 
-            if (!createdTracks.isEmpty()) {
-                desc.append("    Created tracks (LHS+RHS with mapping): ").append(String.join(", ", createdTracks)).append("\n");
+            if (!createdTrackNames.isEmpty()) {
+                desc.append("    Created tracks (LHS+RHS with mapping): ").append(String.join(", ", createdTrackNames)).append("\n");
             }
 
             // Update shuttle's at edge
@@ -590,9 +595,35 @@ public class HenshinRuleModifier {
             addEdgeToGraph(lhs, makeEdge(lhsShuttle, currentLhsTrack, shuttle_at));
             addEdgeToGraph(rhs, makeEdge(rhsShuttle, currentRhsTrack, shuttle_at));
 
+            // ============================================================
+            // ADD DESCRIPTIONS TO NODES FOR EASY IDENTIFICATION OF CHANGES
+            // ============================================================
+
+            // 1. Rename shuttle nodes to indicate they were shifted
+            String shiftedName = originalShuttleName + "_SHIFTED";
+            lhsShuttle.setName(shiftedName);
+            rhsShuttle.setName(shiftedName);
+
+            // 2. Add description to shuttle nodes
+            String shuttleDesc = "[DELTA-SHIFT] This shuttle was moved backward by " + backwardSteps + " step(s). "
+                    + "Original position: " + originalTrackName + " -> New position: " + newTrackName;
+            lhsShuttle.setDescription(shuttleDesc);
+            rhsShuttle.setDescription(shuttleDesc);
+
+            // 3. Add descriptions to newly created track nodes
+            int trackIndex = createdTrackNodes.size();
+            for (Node[] trackPair : createdTrackNodes) {
+                String trackDesc = "[DELTA-SHIFT] Generated track #" + trackIndex + " for shuttle '" + originalShuttleName + "' "
+                        + "(shifted back " + backwardSteps + " steps)";
+                trackPair[0].setDescription(trackDesc);  // LHS track
+                trackPair[1].setDescription(trackDesc);  // RHS track
+                trackIndex--;
+            }
+
+            desc.append("    Renamed shuttle: ").append(originalShuttleName).append(" -> ").append(shiftedName).append("\n");
             desc.append("    Updated edges:\n");
-            desc.append("      - LHS: ").append(safeNode(lhsShuttle)).append(" --at--> ").append(safeNode(currentLhsTrack)).append("\n");
-            desc.append("      - RHS: ").append(safeNode(rhsShuttle)).append(" --at--> ").append(safeNode(currentRhsTrack)).append("\n");
+            desc.append("      - LHS: ").append(shiftedName).append(" --at--> ").append(newTrackName).append("\n");
+            desc.append("      - RHS: ").append(shiftedName).append(" --at--> ").append(newTrackName).append("\n");
 
             // Handle existing RsX1 nodes (if any)
             boolean hasRsX1 = getSingleTarget(rhs, rhsShuttle, shuttle_sx1) != null;
