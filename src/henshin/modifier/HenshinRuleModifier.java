@@ -36,6 +36,7 @@ public class HenshinRuleModifier {
 
     public static void modifyRuleInModule(
             File inputHenshinFile,
+            String selectedRuleName,
             String outputRuleName,
             SampleAlgorithm algorithm,
             File outputHenshinFile
@@ -77,9 +78,9 @@ public class HenshinRuleModifier {
         // Repair edge source/target references that the XMI loader leaves null
         repairEdgeReferences(inRes, inputHenshinFile);
 
-        Rule inRule = findRulePreferName(inModule, "PluginDrive");
+        Rule inRule = findRulePreferName(inModule, selectedRuleName);
         if (inRule == null) {
-            throw new IllegalStateException("No Rule found in input module (expected PluginDrive or at least one rule).");
+            throw new IllegalStateException("No Rule found in input module (expected '" + selectedRuleName + "' or at least one rule).");
         }
 
         System.out.println("[HenshinRuleModifier] Loaded rule '" + inRule.getName()
@@ -94,13 +95,13 @@ public class HenshinRuleModifier {
         // 2) Copy rule into new output module
         // ------------------------------------------------------------
 
-        Rule outRule = EcoreUtil.copy(inRule);
-        outRule.setName(outputRuleName);
+        Module outModule = EcoreUtil.copy(inModule);
 
-        Module outModule = HenshinFactory.eINSTANCE.createModule();
-        outModule.setName(inModule.getName());
-        outModule.getImports().addAll(inModule.getImports());
-        outModule.getUnits().add(outRule);
+        Rule outRule = findRulePreferName(outModule, selectedRuleName);
+        if (outRule == null) {
+            throw new IllegalStateException("Rule '" + selectedRuleName + "' not found in copied module.");
+        }
+        outRule.setName(outputRuleName);
 
         System.out.println("[HenshinRuleModifier] Copied rule '" + outRule.getName()
                 + "' LHS edges=" + outRule.getLhs().getEdges().size()
@@ -110,7 +111,7 @@ public class HenshinRuleModifier {
         verifyEdges("COPY RHS", outRule.getRhs());
 
         // ------------------------------------------------------------
-        // 3) Apply Node Extension OR δ-Shift Operation
+        // 3) Apply Planning-Aware OR δ-Shift-Operation
         // ------------------------------------------------------------
         int k = algorithm != null ? algorithm.getK() : 0;
         int backwardSteps = algorithm != null ? algorithm.getBackwardSteps() : 0;
@@ -134,8 +135,7 @@ public class HenshinRuleModifier {
             modifications.append("No modifications applied (k=0, backwardSteps=0).\n");
         }
 
-        // Set descriptions on module and rule
-        outModule.setDescription(modifications.toString());
+        // Set description on the modified rule
         outRule.setDescription(modifications.toString());
 
         // ------------------------------------------------------------
@@ -146,6 +146,47 @@ public class HenshinRuleModifier {
         outRes.save(null);
 
         System.out.println("[HenshinRuleModifier] Saved output to " + outputHenshinFile.getAbsolutePath());
+    }
+
+    // ============================================================
+    // LIST RULE NAMES FROM A HENSHIN FILE
+    // ============================================================
+
+    /**
+     * Load a .henshin file and return the names of all Rule units in the module.
+     */
+    public static List<String> listRuleNames(File henshinFile) throws IOException {
+        List<String> names = new ArrayList<>();
+
+        if (henshinFile == null || !henshinFile.exists()) {
+            throw new IllegalArgumentException("Henshin file not found: " + henshinFile);
+        }
+
+        HenshinPackage.eINSTANCE.eClass();
+        Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap()
+                .putIfAbsent("henshin", new HenshinResourceFactory());
+
+        String baseDir = henshinFile.getParentFile().getAbsolutePath();
+        HenshinResourceSet rs = new HenshinResourceSet(baseDir);
+
+        URI inUri = URI.createFileURI(henshinFile.getAbsolutePath());
+        Resource inRes = rs.getResource(inUri, true);
+
+        if (inRes.getContents().isEmpty() || !(inRes.getContents().get(0) instanceof Module)) {
+            throw new IllegalStateException("No henshin:Module found in " + henshinFile);
+        }
+
+        Module module = (Module) inRes.getContents().get(0);
+        for (Unit u : module.getUnits()) {
+            if (u instanceof Rule) {
+                String name = ((Rule) u).getName();
+                if (name != null && !name.trim().isEmpty()) {
+                    names.add(name);
+                }
+            }
+        }
+
+        return names;
     }
 
     // ============================================================
@@ -331,7 +372,7 @@ public class HenshinRuleModifier {
 
     private static String applyNodeExtension(Module module, Rule rule, int k, String nodeTypeName) {
         StringBuilder desc = new StringBuilder();
-        desc.append("[Node Extension]\n");
+        desc.append("[Planning-Aware]\n");
         desc.append("  Node type: ").append(nodeTypeName).append("\n");
         desc.append("  Planning horizon k = ").append(k).append("\n");
 
@@ -484,7 +525,7 @@ public class HenshinRuleModifier {
 
     private static String applyPassiveShuttleBackwardMovement(Module module, Rule rule, int backwardSteps) {
         StringBuilder desc = new StringBuilder();
-        desc.append("[Delta-Shift Operation]\n");
+        desc.append("[δ-Shift-Operation]\n");
         desc.append("  Backward steps = ").append(backwardSteps).append("\n");
 
         Graph lhs = rule.getLhs();

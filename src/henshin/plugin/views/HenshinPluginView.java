@@ -23,6 +23,8 @@ public class HenshinPluginView extends ViewPart {
     public static final String ID = "henshin.plugin.view";
 
     private Text inputText;
+    private Button loadRulesButton;
+    private Combo ruleSelectionCombo;
     private Text ruleText;
     private Text outputText;
     private Combo modeSelectorCombo;
@@ -35,74 +37,97 @@ public class HenshinPluginView extends ViewPart {
     private Button loadTypesButton;
     private Label backwardStepsLabel;
     private Text backwardStepsText;
+    private Button runButton;
 
     // Stores the compatible node type info: [typeName, shuttleRefName, selfRefName, trackRefName]
     private List<String[]> compatibleNodeTypes = new ArrayList<>();
+
+    // Stores the rule names loaded from the input file
+    private List<String> loadedRuleNames = new ArrayList<>();
 
     @Override
     public void createPartControl(Composite parent) {
         parent.setLayout(new GridLayout(3, false));
 
-        // Input field (spans 2 columns for the text)
+        // 1) Input file path with "Load Rules" button
         new Label(parent, SWT.NONE).setText("Input .henshin:");
         inputText = new Text(parent, SWT.BORDER);
         inputText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         inputText.setText("/Users/mg/Desktop/WorkSpaceEclipseMoD/HenshinRuleModifierPlugin/inputRules/PluginDrive.henshin");
+        loadRulesButton = new Button(parent, SWT.PUSH);
+        loadRulesButton.setText("Load Rules");
+        loadRulesButton.addListener(SWT.Selection, e -> loadRuleNames());
+
+        // 2) Rule selection combo (populated after Load Rules)
+        new Label(parent, SWT.NONE).setText("Select Rule:");
+        ruleSelectionCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
+        ruleSelectionCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        ruleSelectionCombo.setItems(new String[] {"(Click 'Load Rules' first)"});
+        ruleSelectionCombo.select(0);
+        ruleSelectionCombo.setEnabled(false);
+        ruleSelectionCombo.addListener(SWT.Selection, e -> onRuleSelected());
         new Label(parent, SWT.NONE); // empty cell
 
-        // Rule name
-        new Label(parent, SWT.NONE).setText("Rule name:");
-        ruleText = new Text(parent, SWT.BORDER);
-        ruleText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        ruleText.setText("PluginDrive_MOD");
-        new Label(parent, SWT.NONE); // empty cell
-
-        // Output field
+        // 3) Output file path (auto-filled when rule is selected)
         new Label(parent, SWT.NONE).setText("Output .henshin:");
         outputText = new Text(parent, SWT.BORDER);
         outputText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        outputText.setText("/Users/mg/Desktop/WorkSpaceEclipseMoD/HenshinRuleModifierPlugin/outputRules/out.henshin");
+        outputText.setText("");
+        outputText.setEnabled(false);
         new Label(parent, SWT.NONE); // empty cell
 
-        // Mode selector
+        // 4) Rule name for output (auto-filled: <selectedRule>_MOD)
+        new Label(parent, SWT.NONE).setText("Output Rule name:");
+        ruleText = new Text(parent, SWT.BORDER);
+        ruleText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        ruleText.setText("");
+        ruleText.setEnabled(false);
+        new Label(parent, SWT.NONE); // empty cell
+
+        // 5) Mode selector
         new Label(parent, SWT.NONE).setText("Mode:");
         modeSelectorCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
         modeSelectorCombo.setItems(new String[] {
-            "Node Extension",
-            "Delta-Shift Operation"
+            "Planning-Aware",
+            "δ-Shift-Operation"
         });
         modeSelectorCombo.select(0);
         modeSelectorCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        modeSelectorCombo.setEnabled(false);
         new Label(parent, SWT.NONE); // empty cell
 
-        // Node Type selector (for Node Extension mode)
+        // 6a) Node Type selector (for Planning-Aware mode)
         nodeTypeLabel = new Label(parent, SWT.NONE);
         nodeTypeLabel.setText("Node Type:");
         nodeTypeCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
         nodeTypeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         nodeTypeCombo.setItems(new String[] {"(Click 'Load Types' first)"});
         nodeTypeCombo.select(0);
+        nodeTypeCombo.setEnabled(false);
         loadTypesButton = new Button(parent, SWT.PUSH);
         loadTypesButton.setText("Load Types");
+        loadTypesButton.setEnabled(false);
         loadTypesButton.addListener(SWT.Selection, e -> loadCompatibleNodeTypes());
 
-        // Guard
+        // 6b) Guard
         guardLabel = new Label(parent, SWT.NONE);
         guardLabel.setText("Guard:");
         guardText = new Text(parent, SWT.BORDER);
         guardText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         guardText.setText("3");
+        guardText.setEnabled(false);
         new Label(parent, SWT.NONE); // empty cell
 
-        // Invariant
+        // 6c) Invariant
         invariantLabel = new Label(parent, SWT.NONE);
         invariantLabel.setText("Invariant:");
         invariantText = new Text(parent, SWT.BORDER);
         invariantText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         invariantText.setText("4");
+        invariantText.setEnabled(false);
         new Label(parent, SWT.NONE); // empty cell
 
-        // Backward Steps (for Delta-Shift mode)
+        // 6d) Backward Steps (for δ-Shift-Operation mode)
         backwardStepsLabel = new Label(parent, SWT.NONE);
         backwardStepsLabel.setText("Backward Steps:");
         backwardStepsText = new Text(parent, SWT.BORDER);
@@ -114,16 +139,91 @@ public class HenshinPluginView extends ViewPart {
 
         modeSelectorCombo.addListener(SWT.Selection, e -> updateModeVisibility());
 
-        // Run button
-        Button runButton = new Button(parent, SWT.PUSH);
+        // 7) Run button
+        runButton = new Button(parent, SWT.PUSH);
         runButton.setText("Modify Rule");
         GridData gd = new GridData(SWT.RIGHT, SWT.CENTER, false, false);
         gd.horizontalSpan = 3;
         runButton.setLayoutData(gd);
-
+        runButton.setEnabled(false);
         runButton.addListener(SWT.Selection, e -> runModification());
 
         System.out.println("[henshin.plugin] View created");
+    }
+
+    /**
+     * Load rule names from the input .henshin file and populate the rule selection combo.
+     */
+    private void loadRuleNames() {
+        try {
+            File inputFile = resolveInputFileSmart(inputText.getText().trim());
+
+            List<String> ruleNames = HenshinRuleModifier.listRuleNames(inputFile);
+
+            loadedRuleNames.clear();
+            loadedRuleNames.addAll(ruleNames);
+
+            if (ruleNames.isEmpty()) {
+                ruleSelectionCombo.setItems(new String[] {"(No rules found)"});
+                ruleSelectionCombo.select(0);
+                ruleSelectionCombo.setEnabled(false);
+                setPostRuleSelectionEnabled(false);
+                MessageDialog.openWarning(getSite().getShell(), "No Rules Found",
+                    "No rules found in the input file.");
+            } else {
+                ruleSelectionCombo.setItems(ruleNames.toArray(new String[0]));
+                ruleSelectionCombo.select(0);
+                ruleSelectionCombo.setEnabled(true);
+                onRuleSelected(); // auto-fill output path and rule name for the first rule
+                MessageDialog.openInformation(getSite().getShell(), "Rules Loaded",
+                    "Found " + ruleNames.size() + " rule(s):\n" +
+                    String.join(", ", ruleNames));
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            MessageDialog.openError(getSite().getShell(), "Error Loading Rules", ex.getMessage());
+        }
+    }
+
+    /**
+     * Called when a rule is selected from the combo. Auto-fills output path and rule name,
+     * and enables the rest of the UI.
+     */
+    private void onRuleSelected() {
+        int idx = ruleSelectionCombo.getSelectionIndex();
+        if (idx < 0 || idx >= loadedRuleNames.size()) return;
+
+        String selectedRule = loadedRuleNames.get(idx);
+
+        // Auto-fill output path: outputRules/<selectedRule>_MOD.henshin
+        File inputFile = new File(inputText.getText().trim());
+        File projectRoot = findProjectRoot(inputFile);
+        if (projectRoot != null) {
+            outputText.setText(new File(projectRoot, "outputRules/" + selectedRule + "_MOD.henshin").getAbsolutePath());
+        } else {
+            outputText.setText("outputRules/" + selectedRule + "_MOD.henshin");
+        }
+
+        // Auto-fill rule name
+        ruleText.setText(selectedRule + "_MOD");
+
+        // Enable the rest of the UI
+        setPostRuleSelectionEnabled(true);
+    }
+
+    /**
+     * Enable or disable all UI controls below the rule selection.
+     */
+    private void setPostRuleSelectionEnabled(boolean enabled) {
+        outputText.setEnabled(enabled);
+        ruleText.setEnabled(enabled);
+        modeSelectorCombo.setEnabled(enabled);
+        nodeTypeCombo.setEnabled(enabled);
+        loadTypesButton.setEnabled(enabled);
+        guardText.setEnabled(enabled);
+        invariantText.setEnabled(enabled);
+        backwardStepsText.setEnabled(enabled);
+        runButton.setEnabled(enabled);
     }
 
     /**
@@ -174,6 +274,13 @@ public class HenshinPluginView extends ViewPart {
 
     private void runModification() {
         try {
+            // Validate rule selection
+            int ruleIdx = ruleSelectionCombo.getSelectionIndex();
+            if (ruleIdx < 0 || ruleIdx >= loadedRuleNames.size()) {
+                throw new IllegalArgumentException("Please select a rule first (click 'Load Rules').");
+            }
+            String selectedRuleName = loadedRuleNames.get(ruleIdx);
+
             // 1) Input finden (absolut ODER workspace/projekt-relativ)
             File input = resolveInputFileSmart(inputText.getText().trim());
 
@@ -182,7 +289,7 @@ public class HenshinPluginView extends ViewPart {
 
             String ruleName = ruleText.getText().trim();
             if (ruleName.isEmpty()) {
-                throw new IllegalArgumentException("Rule name must not be empty.");
+                throw new IllegalArgumentException("Output rule name must not be empty.");
             }
 
             ensureParentFolderExists(output);
@@ -190,7 +297,7 @@ public class HenshinPluginView extends ViewPart {
             int selectedModeIndex = modeSelectorCombo.getSelectionIndex();
 
             if (selectedModeIndex == 0) {
-                // Node Extension mode
+                // Planning-Aware mode
                 int guard = parseIntInRange(guardText.getText().trim(), 0, 15, "Guard");
                 int invariant = parseIntInRange(invariantText.getText().trim(), 0, 15, "Invariant");
 
@@ -209,6 +316,7 @@ public class HenshinPluginView extends ViewPart {
 
                 HenshinRuleModifier.modifyRuleInModule(
                         input,
+                        selectedRuleName,
                         ruleName,
                         new SampleAlgorithm(k, 0, nodeTypeName),
                         output
@@ -217,7 +325,8 @@ public class HenshinPluginView extends ViewPart {
                 MessageDialog.openInformation(
                         getSite().getShell(),
                         "Success",
-                        "Node Extension applied:\n" +
+                        "Planning-Aware applied:\n" +
+                        "  Source rule: " + selectedRuleName + "\n" +
                         "  Node type: " + nodeTypeName + "\n" +
                         "  k = " + k + "\n" +
                         "\nInput:\n" + input.getAbsolutePath() +
@@ -225,11 +334,12 @@ public class HenshinPluginView extends ViewPart {
                 );
 
             } else if (selectedModeIndex == 1) {
-                // Delta-Shift Operation mode
+                // δ-Shift-Operation mode
                 int backwardSteps = parseIntInRange(backwardStepsText.getText().trim(), 0, 10, "Backward Steps");
 
                 HenshinRuleModifier.modifyRuleInModule(
                         input,
+                        selectedRuleName,
                         ruleName,
                         new SampleAlgorithm(0, backwardSteps, null),
                         output
@@ -238,7 +348,9 @@ public class HenshinPluginView extends ViewPart {
                 MessageDialog.openInformation(
                         getSite().getShell(),
                         "Success",
-                        "Delta-Shift Operation applied with backward steps = " + backwardSteps
+                        "δ-Shift-Operation applied:\n" +
+                        "  Source rule: " + selectedRuleName + "\n" +
+                        "  Backward steps = " + backwardSteps
                         + "\nInput:\n" + input.getAbsolutePath()
                         + "\nOutput:\n" + output.getAbsolutePath()
                 );
@@ -256,7 +368,7 @@ public class HenshinPluginView extends ViewPart {
         int selectedModeIndex = modeSelectorCombo.getSelectionIndex();
         boolean isNodeExtension = (selectedModeIndex == 0);
 
-        // Node Extension mode fields
+        // Planning-Aware mode fields
         nodeTypeLabel.setVisible(isNodeExtension);
         nodeTypeCombo.setVisible(isNodeExtension);
         loadTypesButton.setVisible(isNodeExtension);
@@ -265,7 +377,7 @@ public class HenshinPluginView extends ViewPart {
         invariantLabel.setVisible(isNodeExtension);
         invariantText.setVisible(isNodeExtension);
 
-        // Delta-Shift mode fields
+        // δ-Shift-Operation mode fields
         backwardStepsLabel.setVisible(!isNodeExtension);
         backwardStepsText.setVisible(!isNodeExtension);
 
