@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="ASCII"?>
+<henshin:Module xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:henshin="http://www.eclipse.org/emf/2011/Henshin" xmi:id="_6ei6ABZkEfG4psJ8gUW9yA" name="PluginDriveModule">
+  <imports href="../models/ecoreModel.ecore#/"/>
+  <units xsi:type="henshin:Rule" xmi:id="_6ei6ARZkEfG4psJ8gUW9yA" name="PluginDrive_Exe" description="[Rule-Split] Exe rule for PluginDrive &#x2014; original side effects, requires+deletes marker Meta1">
+    <parameters xmi:id="_6ei6AhZkEfG4psJ8gUW9yA" name="x">
+      <type xsi:type="ecore:EClass" href="../models/ecoreModel.ecore#//Shuttle"/>
+    </parameters>
+    <parameters xmi:id="_6ei6AxZkEfG4psJ8gUW9yA" name="t1">
+      <type xsi:type="ecore:EClass" href="../models/ecoreModel.ecore#//Track"/>
+    </parameters>
+    <parameters xmi:id="_6ei6BBZkEfG4psJ8gUW9yA" name="t2">
+      <type xsi:type="ecore:EClass" href="../models/ecoreModel.ecore#//Track"/>
+    </parameters>
+    <lhs xmi:id="_6ei6BRZkEfG4psJ8gUW9yA" name="Lhs">
+      <nodes xmi:id="_6ei6BhZkEfG4psJ8gUW9yA" name="root" outgoing="_6ei6DRZkEfG4psJ8gUW9yA _6ei6DhZkEfG4psJ8gUW9yA _6ei6DxZkEfG4psJ8gUW9yA _6ei6EBZkEfG4psJ8gUW9yA _6ei6FRZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Model"/>
+      </nodes>
+      <nodes xmi:id="_6ei6BxZkEfG4psJ8gUW9yA" name="t1" incoming="_6ei6DRZkEfG4psJ8gUW9yA _6ei6ExZkEfG4psJ8gUW9yA" outgoing="_6ei6ERZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="_6ei6CBZkEfG4psJ8gUW9yA" name="t2" incoming="_6ei6DhZkEfG4psJ8gUW9yA _6ei6ERZkEfG4psJ8gUW9yA" outgoing="_6ei6EhZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="_6ei6CRZkEfG4psJ8gUW9yA" name="t3" incoming="_6ei6DxZkEfG4psJ8gUW9yA _6ei6EhZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="_6ei6ChZkEfG4psJ8gUW9yA" name="x" incoming="_6ei6EBZkEfG4psJ8gUW9yA" outgoing="_6ei6ExZkEfG4psJ8gUW9yA _6ei6FBZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Shuttle"/>
+        <attributes xmi:id="_6ei6CxZkEfG4psJ8gUW9yA" value="DRIVE">
+          <type href="../models/ecoreModel.ecore#//Shuttle/mode"/>
+        </attributes>
+      </nodes>
+      <nodes xmi:id="_6ei6DBZkEfG4psJ8gUW9yA" name="M1" incoming="_6ei6FBZkEfG4psJ8gUW9yA _6ei6FRZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Meta1"/>
+      </nodes>
+      <edges xmi:id="_6ei6DRZkEfG4psJ8gUW9yA" source="_6ei6BhZkEfG4psJ8gUW9yA" target="_6ei6BxZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="_6ei6DhZkEfG4psJ8gUW9yA" source="_6ei6BhZkEfG4psJ8gUW9yA" target="_6ei6CBZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="_6ei6DxZkEfG4psJ8gUW9yA" source="_6ei6BhZkEfG4psJ8gUW9yA" target="_6ei6CRZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="_6ei6EBZkEfG4psJ8gUW9yA" source="_6ei6BhZkEfG4psJ8gUW9yA" target="_6ei6ChZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Model/shuttles"/>
+      </edges>
+      <edges xmi:id="_6ei6ERZkEfG4psJ8gUW9yA" source="_6ei6BxZkEfG4psJ8gUW9yA" target="_6ei6CBZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="_6ei6EhZkEfG4psJ8gUW9yA" source="_6ei6CBZkEfG4psJ8gUW9yA" target="_6ei6CRZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="_6ei6ExZkEfG4psJ8gUW9yA" source="_6ei6ChZkEfG4psJ8gUW9yA" target="_6ei6BxZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Shuttle/at"/>
+      </edges>
+      <edges xmi:id="_6ei6FBZkEfG4psJ8gUW9yA" source="_6ei6ChZkEfG4psJ8gUW9yA" target="_6ei6DBZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Shuttle/m1"/>
+      </edges>
+      <edges xmi:id="_6ei6FRZkEfG4psJ8gUW9yA" source="_6ei6BhZkEfG4psJ8gUW9yA" target="_6ei6DBZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Model/f1"/>
+      </edges>
+    </lhs>
+    <rhs xmi:id="_6ei6FhZkEfG4psJ8gUW9yA" name="Rhs">
+      <nodes xmi:id="_6ei6FxZkEfG4psJ8gUW9yA" name="root" outgoing="_6ei6HRZkEfG4psJ8gUW9yA _6ei6HhZkEfG4psJ8gUW9yA _6ei6HxZkEfG4psJ8gUW9yA _6ei6IBZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Model"/>
+      </nodes>
+      <nodes xmi:id="_6ei6GBZkEfG4psJ8gUW9yA" name="t1" incoming="_6ei6HRZkEfG4psJ8gUW9yA" outgoing="_6ei6IRZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="_6ei6GRZkEfG4psJ8gUW9yA" name="t2" incoming="_6ei6HhZkEfG4psJ8gUW9yA _6ei6IRZkEfG4psJ8gUW9yA _6ei6IxZkEfG4psJ8gUW9yA" outgoing="_6ei6IhZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="_6ei6GhZkEfG4psJ8gUW9yA" name="t3" incoming="_6ei6HxZkEfG4psJ8gUW9yA _6ei6IhZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="_6ei6GxZkEfG4psJ8gUW9yA" name="x" incoming="_6ei6IBZkEfG4psJ8gUW9yA" outgoing="_6ei6IxZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Shuttle"/>
+        <attributes xmi:id="_6ei6HBZkEfG4psJ8gUW9yA" value="DRIVE">
+          <type href="../models/ecoreModel.ecore#//Shuttle/mode"/>
+        </attributes>
+      </nodes>
+      <edges xmi:id="_6ei6HRZkEfG4psJ8gUW9yA" source="_6ei6FxZkEfG4psJ8gUW9yA" target="_6ei6GBZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="_6ei6HhZkEfG4psJ8gUW9yA" source="_6ei6FxZkEfG4psJ8gUW9yA" target="_6ei6GRZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="_6ei6HxZkEfG4psJ8gUW9yA" source="_6ei6FxZkEfG4psJ8gUW9yA" target="_6ei6GhZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="_6ei6IBZkEfG4psJ8gUW9yA" source="_6ei6FxZkEfG4psJ8gUW9yA" target="_6ei6GxZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Model/shuttles"/>
+      </edges>
+      <edges xmi:id="_6ei6IRZkEfG4psJ8gUW9yA" source="_6ei6GBZkEfG4psJ8gUW9yA" target="_6ei6GRZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="_6ei6IhZkEfG4psJ8gUW9yA" source="_6ei6GRZkEfG4psJ8gUW9yA" target="_6ei6GhZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="_6ei6IxZkEfG4psJ8gUW9yA" source="_6ei6GxZkEfG4psJ8gUW9yA" target="_6ei6GRZkEfG4psJ8gUW9yA">
+        <type href="../models/ecoreModel.ecore#//Shuttle/at"/>
+      </edges>
+    </rhs>
+    <mappings xmi:id="_6ei6JBZkEfG4psJ8gUW9yA" origin="_6ei6BhZkEfG4psJ8gUW9yA" image="_6ei6FxZkEfG4psJ8gUW9yA"/>
+    <mappings xmi:id="_6ei6JRZkEfG4psJ8gUW9yA" origin="_6ei6BxZkEfG4psJ8gUW9yA" image="_6ei6GBZkEfG4psJ8gUW9yA"/>
+    <mappings xmi:id="_6ei6JhZkEfG4psJ8gUW9yA" origin="_6ei6CBZkEfG4psJ8gUW9yA" image="_6ei6GRZkEfG4psJ8gUW9yA"/>
+    <mappings xmi:id="_6ei6JxZkEfG4psJ8gUW9yA" origin="_6ei6CRZkEfG4psJ8gUW9yA" image="_6ei6GhZkEfG4psJ8gUW9yA"/>
+    <mappings xmi:id="_6ei6KBZkEfG4psJ8gUW9yA" origin="_6ei6ChZkEfG4psJ8gUW9yA" image="_6ei6GxZkEfG4psJ8gUW9yA"/>
+  </units>
+</henshin:Module>

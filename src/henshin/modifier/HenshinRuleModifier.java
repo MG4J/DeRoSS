@@ -141,11 +141,251 @@ public class HenshinRuleModifier {
         // ------------------------------------------------------------
         // 4) Save output
         // ------------------------------------------------------------
+        System.out.println("[HenshinRuleModifier] Output rule: " + outRule.getName());
+
         Resource outRes = rs.createResource(URI.createFileURI(outputHenshinFile.getAbsolutePath()));
         outRes.getContents().add(outModule);
         outRes.save(null);
 
         System.out.println("[HenshinRuleModifier] Saved output to " + outputHenshinFile.getAbsolutePath());
+    }
+
+    // ============================================================
+    // RULE-SPLIT: produce two separate output files (Obs + Exe)
+    // ============================================================
+
+    /**
+     * Split a rule into two separate .henshin files:
+     * <ul>
+     *   <li>Obs file: observation rule (RHS = copy of LHS, no side effects, optionally creates marker)</li>
+     *   <li>Exe file: execution rule (original side effects, optionally requires+deletes marker)</li>
+     * </ul>
+     */
+    public static void splitRuleToFiles(
+            File inputHenshinFile,
+            String selectedRuleName,
+            String markerTypeName,
+            File obsOutputFile,
+            File exeOutputFile
+    ) throws IOException {
+
+        if (inputHenshinFile == null || !inputHenshinFile.exists()) {
+            throw new IllegalArgumentException("Input henshin file not found: " + inputHenshinFile);
+        }
+
+        // ---- Load input ----
+        HenshinPackage.eINSTANCE.eClass();
+        Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap()
+                .putIfAbsent("henshin", new HenshinResourceFactory());
+
+        String baseDir = inputHenshinFile.getParentFile().getAbsolutePath();
+        HenshinResourceSet rs = new HenshinResourceSet(baseDir);
+
+        URI inUri = URI.createFileURI(inputHenshinFile.getAbsolutePath());
+        Resource inRes = rs.getResource(inUri, true);
+
+        if (inRes.getContents().isEmpty() || !(inRes.getContents().get(0) instanceof Module)) {
+            throw new IllegalStateException("No henshin:Module found in " + inputHenshinFile);
+        }
+
+        Module inModule = (Module) inRes.getContents().get(0);
+        EcoreUtil.resolveAll(rs);
+        repairEdgeReferences(inRes, inputHenshinFile);
+
+        Rule inRule = findRulePreferName(inModule, selectedRuleName);
+        if (inRule == null) {
+            throw new IllegalStateException("No Rule found (expected '" + selectedRuleName + "').");
+        }
+
+        System.out.println("[RuleSplit] Loaded rule '" + inRule.getName()
+                + "' LHS nodes=" + inRule.getLhs().getNodes().size()
+                + " RHS nodes=" + inRule.getRhs().getNodes().size());
+
+        // ---- Create two independent module copies ----
+        Module obsModule = EcoreUtil.copy(inModule);
+        Module exeModule = EcoreUtil.copy(inModule);
+
+        Rule obsRule = findRulePreferName(obsModule, selectedRuleName);
+        Rule exeRule = findRulePreferName(exeModule, selectedRuleName);
+
+        // ---- Resolve metamodel references for marker (if any) ----
+        EClass markerCls = null;
+        EReference shuttleToMarkerRef = null;
+        EReference modelContainmentRef = null;
+        EClass shuttleCls = null;
+        EReference shuttle_at = null;
+
+        if (markerTypeName != null) {
+            EPackage pkg = resolveMetamodelPackage(obsModule);
+            if (pkg == null) throw new IllegalStateException("Could not resolve metamodel EPackage.");
+
+            markerCls = (EClass) pkg.getEClassifier(markerTypeName);
+            if (markerCls == null) throw new IllegalStateException("Marker type '" + markerTypeName + "' not found.");
+
+            shuttleCls = (EClass) pkg.getEClassifier("Shuttle");
+            EClass modelCls = (EClass) pkg.getEClassifier("Model");
+            shuttle_at = (EReference) shuttleCls.getEStructuralFeature("at");
+
+            for (EReference ref : shuttleCls.getEAllReferences()) {
+                if (sameEClassName(ref.getEReferenceType(), markerCls)) {
+                    shuttleToMarkerRef = ref;
+                    break;
+                }
+            }
+            if (shuttleToMarkerRef == null) throw new IllegalStateException("No reference from Shuttle to " + markerTypeName);
+
+            for (EReference ref : modelCls.getEAllReferences()) {
+                if (ref.isContainment() && sameEClassName(ref.getEReferenceType(), markerCls)) {
+                    modelContainmentRef = ref;
+                    break;
+                }
+            }
+            if (modelContainmentRef == null) throw new IllegalStateException("No containment from Model to " + markerTypeName);
+        }
+
+        // ---- Transform Obs rule ----
+        // RHS becomes a copy of LHS (no side effects)
+        String obsName = selectedRuleName + "_Obs";
+        {
+            Graph lhs = obsRule.getLhs();
+            Graph newRhs = EcoreUtil.copy(lhs);
+            newRhs.setName("Rhs");
+            obsRule.setRhs(newRhs);
+
+            // Identity mappings
+            obsRule.getMappings().clear();
+            List<Node> lhsNodes = lhs.getNodes();
+            List<Node> rhsNodes = newRhs.getNodes();
+            for (int i = 0; i < lhsNodes.size() && i < rhsNodes.size(); i++) {
+                Mapping m = HenshinFactory.eINSTANCE.createMapping();
+                m.setOrigin(lhsNodes.get(i));
+                m.setImage(rhsNodes.get(i));
+                obsRule.getMappings().add(m);
+            }
+
+            // Optionally add marker node to Obs RHS (created when rule fires)
+            if (markerCls != null) {
+                Node marker = HenshinFactory.eINSTANCE.createNode();
+                marker.setType(markerCls);
+                marker.setName("M1");
+                newRhs.getNodes().add(marker);
+
+                Node rhsShuttle = findActiveShuttleInGraph(newRhs, obsRule, shuttle_at, shuttleCls, true);
+                Node rhsRoot = findNodeByNameOrType(newRhs, "root", "Model");
+
+                if (rhsShuttle != null) {
+                    addEdgeToGraph(newRhs, makeEdge(rhsShuttle, marker, shuttleToMarkerRef));
+                }
+                if (rhsRoot != null) {
+                    addEdgeToGraph(newRhs, makeEdge(rhsRoot, marker, modelContainmentRef));
+                }
+            }
+
+            obsRule.setName(obsName);
+            obsRule.setDescription("[Rule-Split] Obs rule for " + selectedRuleName
+                    + " — observation only, no side effects"
+                    + (markerTypeName != null ? ", creates marker " + markerTypeName : ""));
+        }
+
+        // ---- Transform Exe rule ----
+        // Keep original LHS and RHS (all side effects preserved)
+        String exeName = selectedRuleName + "_Exe";
+        {
+            // Optionally add marker node to Exe LHS only (deleted when rule fires)
+            if (markerCls != null) {
+                // Need to resolve marker type from the exe module's own metamodel
+                EPackage exePkg = resolveMetamodelPackage(exeModule);
+                EClass exeMarkerCls = (EClass) exePkg.getEClassifier(markerTypeName);
+                EClass exeShuttleCls = (EClass) exePkg.getEClassifier("Shuttle");
+                EReference exeShuttleAt = (EReference) exeShuttleCls.getEStructuralFeature("at");
+
+                EReference exeShuttleToMarker = null;
+                for (EReference ref : exeShuttleCls.getEAllReferences()) {
+                    if (sameEClassName(ref.getEReferenceType(), exeMarkerCls)) {
+                        exeShuttleToMarker = ref;
+                        break;
+                    }
+                }
+                EClass exeModelCls = (EClass) exePkg.getEClassifier("Model");
+                EReference exeModelContainment = null;
+                for (EReference ref : exeModelCls.getEAllReferences()) {
+                    if (ref.isContainment() && sameEClassName(ref.getEReferenceType(), exeMarkerCls)) {
+                        exeModelContainment = ref;
+                        break;
+                    }
+                }
+
+                Graph exeLhs = exeRule.getLhs();
+                Node marker = HenshinFactory.eINSTANCE.createNode();
+                marker.setType(exeMarkerCls);
+                marker.setName("M1");
+                exeLhs.getNodes().add(marker);
+
+                Node lhsShuttle = findActiveShuttleInGraph(exeLhs, exeRule, exeShuttleAt, exeShuttleCls, false);
+                Node lhsRoot = findNodeByNameOrType(exeLhs, "root", "Model");
+
+                if (lhsShuttle != null && exeShuttleToMarker != null) {
+                    addEdgeToGraph(exeLhs, makeEdge(lhsShuttle, marker, exeShuttleToMarker));
+                }
+                if (lhsRoot != null && exeModelContainment != null) {
+                    addEdgeToGraph(exeLhs, makeEdge(lhsRoot, marker, exeModelContainment));
+                }
+            }
+
+            exeRule.setName(exeName);
+            exeRule.setDescription("[Rule-Split] Exe rule for " + selectedRuleName
+                    + " — original side effects"
+                    + (markerTypeName != null ? ", requires+deletes marker " + markerTypeName : ""));
+        }
+
+        // ---- Save Obs file ----
+        Resource obsRes = rs.createResource(URI.createFileURI(obsOutputFile.getAbsolutePath()));
+        obsRes.getContents().add(obsModule);
+        obsRes.save(null);
+        System.out.println("[RuleSplit] Saved Obs rule to " + obsOutputFile.getAbsolutePath());
+
+        // ---- Save Exe file ----
+        Resource exeRes = rs.createResource(URI.createFileURI(exeOutputFile.getAbsolutePath()));
+        exeRes.getContents().add(exeModule);
+        exeRes.save(null);
+        System.out.println("[RuleSplit] Saved Exe rule to " + exeOutputFile.getAbsolutePath());
+    }
+
+    /**
+     * Find the active shuttle node in a graph. For RHS graphs (isRhs=true), finds
+     * the shuttle that moves to a different track. For LHS graphs (isRhs=false),
+     * finds the corresponding LHS shuttle via the rule's mappings.
+     */
+    private static Node findActiveShuttleInGraph(Graph graph, Rule rule,
+            EReference shuttleAtRef, EClass shuttleCls, boolean isRhs) {
+
+        if (shuttleAtRef == null || shuttleCls == null) return null;
+
+        // Try via active shuttle detection on the rule
+        Node activeRhs = findActiveShuttleRhs(rule, shuttleAtRef, shuttleCls);
+        if (activeRhs != null) {
+            if (isRhs) {
+                // For Obs RHS (which is a copy of LHS), find by name
+                return findNodeByName(graph, activeRhs.getName());
+            } else {
+                // For Exe LHS, find via mapping
+                for (Mapping m : rule.getMappings()) {
+                    if (m.getImage() == activeRhs) {
+                        return m.getOrigin();
+                    }
+                }
+                // Fallback: find by name
+                return findNodeByName(graph, activeRhs.getName());
+            }
+        }
+
+        // Fallback: return first shuttle in graph
+        for (Node n : graph.getNodes()) {
+            if (n.getType() != null && "Shuttle".equals(n.getType().getName())) {
+                return n;
+            }
+        }
+        return null;
     }
 
     // ============================================================
@@ -281,6 +521,105 @@ public class HenshinRuleModifier {
                 + " (Shuttle." + shuttleRef.getName()
                 + " -> " + targetType.getName() + "." + selfRef.getName()
                 + " -> Track via " + trackRef.getName() + ")");
+        }
+
+        return result;
+    }
+
+    // ============================================================
+    // FIND MARKER NODE TYPES FOR RULE-SPLIT
+    // ============================================================
+
+    /**
+     * Find node types in the metamodel that can serve as marking nodes for rule splitting.
+     * A type is a valid marker if:
+     * 1. Shuttle has a reference to it
+     * 2. Model has a containment reference to it
+     *
+     * @return List of String arrays: [typeName, shuttleRefName, modelContainmentRefName]
+     */
+    public static List<String[]> findMarkerNodeTypes(File inputHenshinFile) throws IOException {
+        List<String[]> result = new ArrayList<>();
+
+        if (inputHenshinFile == null || !inputHenshinFile.exists()) {
+            throw new IllegalArgumentException("Input henshin file not found: " + inputHenshinFile);
+        }
+
+        HenshinPackage.eINSTANCE.eClass();
+        Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap()
+                .putIfAbsent("henshin", new HenshinResourceFactory());
+
+        String baseDir = inputHenshinFile.getParentFile().getAbsolutePath();
+        HenshinResourceSet rs = new HenshinResourceSet(baseDir);
+
+        URI inUri = URI.createFileURI(inputHenshinFile.getAbsolutePath());
+        Resource inRes = rs.getResource(inUri, true);
+
+        if (inRes.getContents().isEmpty() || !(inRes.getContents().get(0) instanceof Module)) {
+            throw new IllegalStateException("No henshin:Module found in " + inputHenshinFile);
+        }
+
+        Module inModule = (Module) inRes.getContents().get(0);
+        EcoreUtil.resolveAll(rs);
+
+        EPackage pkg = resolveMetamodelPackage(inModule);
+        if (pkg == null) {
+            throw new IllegalStateException("Could not resolve metamodel EPackage.");
+        }
+
+        EClass shuttleCls = (EClass) pkg.getEClassifier("Shuttle");
+        EClass modelCls = (EClass) pkg.getEClassifier("Model");
+        EClass trackCls = (EClass) pkg.getEClassifier("Track");
+
+        if (shuttleCls == null || modelCls == null) {
+            throw new IllegalStateException("Metamodel must have Shuttle and Model classes.");
+        }
+
+        // Iterate through all references from Shuttle
+        for (EReference shuttleRef : shuttleCls.getEAllReferences()) {
+            EClass targetType = shuttleRef.getEReferenceType();
+            if (targetType == null) continue;
+
+            // Skip infrastructure types: Shuttle, Model, Track
+            if (sameEClassName(targetType, shuttleCls) || sameEClassName(targetType, modelCls)) {
+                continue;
+            }
+            if (trackCls != null && sameEClassName(targetType, trackCls)) {
+                continue;
+            }
+
+            // Require the type to have a reference back to Shuttle.
+            // This distinguishes pure marker types (Meta1-Meta5 have s0 → Shuttle)
+            // from planning types (RsX2-5, RsY2-5 have no reference to Shuttle).
+            boolean hasRefToShuttle = false;
+            for (EReference ref : targetType.getEAllReferences()) {
+                if (sameEClassName(ref.getEReferenceType(), shuttleCls)) {
+                    hasRefToShuttle = true;
+                    break;
+                }
+            }
+            if (!hasRefToShuttle) continue;
+
+            // Check if Model has a containment reference to this type
+            EReference modelContainmentRef = null;
+            for (EReference ref : modelCls.getEAllReferences()) {
+                if (ref.isContainment() && sameEClassName(ref.getEReferenceType(), targetType)) {
+                    modelContainmentRef = ref;
+                    break;
+                }
+            }
+            if (modelContainmentRef == null) continue;
+
+            // This type can serve as a marker node
+            result.add(new String[] {
+                targetType.getName(),
+                shuttleRef.getName(),
+                modelContainmentRef.getName()
+            });
+
+            System.out.println("[findMarkerNodeTypes] Found: " + targetType.getName()
+                + " (Shuttle." + shuttleRef.getName()
+                + ", Model." + modelContainmentRef.getName() + ")");
         }
 
         return result;
@@ -524,6 +863,7 @@ public class HenshinRuleModifier {
     private static int generatedTrackCounter = 0;
 
     private static String applyPassiveShuttleBackwardMovement(Module module, Rule rule, int backwardSteps) {
+        generatedTrackCounter = 0;
         StringBuilder desc = new StringBuilder();
         desc.append("[δ-Shift-Operation]\n");
         desc.append("  Backward steps = ").append(backwardSteps).append("\n");
@@ -828,6 +1168,7 @@ public class HenshinRuleModifier {
             planStep++;
         }
     }
+
 
     // ============================================================
     // ACTIVE SHUTTLE DETECTION

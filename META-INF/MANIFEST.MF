@@ -19,5 +19,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.emf.henshin.model,
  org.eclipse.emf.henshin.interpreter,
  org.eclipse.swt,
- org.eclipse.jface
+ org.eclipse.jface,
+ org.eclipse.debug.core;resolution:=optional,
+ org.eclipse.jdt.launching;resolution:=optional,
+ org.eclipse.core.resources;resolution:=optional
 

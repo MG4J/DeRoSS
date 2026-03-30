@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="ASCII"?>
+<henshin:Module xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:henshin="http://www.eclipse.org/emf/2011/Henshin" xmi:id="__hhogBZgEfGNeNxp-VRElw" name="PluginDriveModule">
+  <imports href="../models/ecoreModel.ecore#/"/>
+  <units xsi:type="henshin:Rule" xmi:id="__hhogRZgEfGNeNxp-VRElw" name="PluginDrive_Obs" description="=== HenshinRuleModifier Output ===&#xA;Source rule: PluginDrive&#xA;&#xA;[Rule-Split]&#xA;  Source rule: PluginDrive&#xA;  Marker type: (none)&#xA;&#xA;  --- Obs Rule ---&#xA;  LHS: same as original&#xA;  RHS: copy of LHS (no side effects)&#xA;  Renamed to: PluginDrive_Obs&#xA;&#xA;  --- Exe Rule ---&#xA;  LHS: original LHS (+ marker if selected)&#xA;  RHS: original RHS (marker deleted if selected)&#xA;  Renamed to: PluginDrive_Exe&#xA;&#xA;  Output: 2 rules in one module (PluginDrive_Obs + PluginDrive_Exe)&#xA;&#xA;">
+    <parameters xmi:id="__hhoghZgEfGNeNxp-VRElw" name="x">
+      <type xsi:type="ecore:EClass" href="../models/ecoreModel.ecore#//Shuttle"/>
+    </parameters>
+    <parameters xmi:id="__hiPkBZgEfGNeNxp-VRElw" name="t1">
+      <type xsi:type="ecore:EClass" href="../models/ecoreModel.ecore#//Track"/>
+    </parameters>
+    <parameters xmi:id="__hiPkRZgEfGNeNxp-VRElw" name="t2">
+      <type xsi:type="ecore:EClass" href="../models/ecoreModel.ecore#//Track"/>
+    </parameters>
+    <lhs xmi:id="__hiPkhZgEfGNeNxp-VRElw" name="Lhs">
+      <nodes xmi:id="__hiPkxZgEfGNeNxp-VRElw" name="root" outgoing="__hiPmRZgEfGNeNxp-VRElw __hiPmhZgEfGNeNxp-VRElw __hiPmxZgEfGNeNxp-VRElw __hiPnBZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Model"/>
+      </nodes>
+      <nodes xmi:id="__hiPlBZgEfGNeNxp-VRElw" name="t1" incoming="__hiPmRZgEfGNeNxp-VRElw __hiPnxZgEfGNeNxp-VRElw" outgoing="__hiPnRZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="__hiPlRZgEfGNeNxp-VRElw" name="t2" incoming="__hiPmhZgEfGNeNxp-VRElw __hiPnRZgEfGNeNxp-VRElw" outgoing="__hiPnhZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="__hiPlhZgEfGNeNxp-VRElw" name="t3" incoming="__hiPmxZgEfGNeNxp-VRElw __hiPnhZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="__hiPlxZgEfGNeNxp-VRElw" name="x" incoming="__hiPnBZgEfGNeNxp-VRElw" outgoing="__hiPnxZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Shuttle"/>
+        <attributes xmi:id="__hiPmBZgEfGNeNxp-VRElw" value="DRIVE">
+          <type href="../models/ecoreModel.ecore#//Shuttle/mode"/>
+        </attributes>
+      </nodes>
+      <edges xmi:id="__hiPmRZgEfGNeNxp-VRElw" source="__hiPkxZgEfGNeNxp-VRElw" target="__hiPlBZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="__hiPmhZgEfGNeNxp-VRElw" source="__hiPkxZgEfGNeNxp-VRElw" target="__hiPlRZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="__hiPmxZgEfGNeNxp-VRElw" source="__hiPkxZgEfGNeNxp-VRElw" target="__hiPlhZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="__hiPnBZgEfGNeNxp-VRElw" source="__hiPkxZgEfGNeNxp-VRElw" target="__hiPlxZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Model/shuttles"/>
+      </edges>
+      <edges xmi:id="__hiPnRZgEfGNeNxp-VRElw" source="__hiPlBZgEfGNeNxp-VRElw" target="__hiPlRZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="__hiPnhZgEfGNeNxp-VRElw" source="__hiPlRZgEfGNeNxp-VRElw" target="__hiPlhZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="__hiPnxZgEfGNeNxp-VRElw" source="__hiPlxZgEfGNeNxp-VRElw" target="__hiPlBZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Shuttle/at"/>
+      </edges>
+    </lhs>
+    <rhs xmi:id="__hiPoBZgEfGNeNxp-VRElw" name="Rhs">
+      <nodes xmi:id="__hiPoRZgEfGNeNxp-VRElw" name="root" outgoing="__hiPpxZgEfGNeNxp-VRElw __hiPqBZgEfGNeNxp-VRElw __hiPqRZgEfGNeNxp-VRElw __hiPqhZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Model"/>
+      </nodes>
+      <nodes xmi:id="__hiPohZgEfGNeNxp-VRElw" name="t1" incoming="__hiPpxZgEfGNeNxp-VRElw __hiPrRZgEfGNeNxp-VRElw" outgoing="__hiPqxZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="__hiPoxZgEfGNeNxp-VRElw" name="t2" incoming="__hiPqBZgEfGNeNxp-VRElw __hiPqxZgEfGNeNxp-VRElw" outgoing="__hiPrBZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="__hiPpBZgEfGNeNxp-VRElw" name="t3" incoming="__hiPqRZgEfGNeNxp-VRElw __hiPrBZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="__hiPpRZgEfGNeNxp-VRElw" name="x" incoming="__hiPqhZgEfGNeNxp-VRElw" outgoing="__hiPrRZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Shuttle"/>
+        <attributes xmi:id="__hiPphZgEfGNeNxp-VRElw" value="DRIVE">
+          <type href="../models/ecoreModel.ecore#//Shuttle/mode"/>
+        </attributes>
+      </nodes>
+      <edges xmi:id="__hiPpxZgEfGNeNxp-VRElw" source="__hiPoRZgEfGNeNxp-VRElw" target="__hiPohZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="__hiPqBZgEfGNeNxp-VRElw" source="__hiPoRZgEfGNeNxp-VRElw" target="__hiPoxZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="__hiPqRZgEfGNeNxp-VRElw" source="__hiPoRZgEfGNeNxp-VRElw" target="__hiPpBZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="__hiPqhZgEfGNeNxp-VRElw" source="__hiPoRZgEfGNeNxp-VRElw" target="__hiPpRZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Model/shuttles"/>
+      </edges>
+      <edges xmi:id="__hiPqxZgEfGNeNxp-VRElw" source="__hiPohZgEfGNeNxp-VRElw" target="__hiPoxZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="__hiPrBZgEfGNeNxp-VRElw" source="__hiPoxZgEfGNeNxp-VRElw" target="__hiPpBZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="__hiPrRZgEfGNeNxp-VRElw" source="__hiPpRZgEfGNeNxp-VRElw" target="__hiPohZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Shuttle/at"/>
+      </edges>
+    </rhs>
+    <mappings xmi:id="__hiPrhZgEfGNeNxp-VRElw" origin="__hiPkxZgEfGNeNxp-VRElw" image="__hiPoRZgEfGNeNxp-VRElw"/>
+    <mappings xmi:id="__hiPrxZgEfGNeNxp-VRElw" origin="__hiPlBZgEfGNeNxp-VRElw" image="__hiPohZgEfGNeNxp-VRElw"/>
+    <mappings xmi:id="__hiPsBZgEfGNeNxp-VRElw" origin="__hiPlRZgEfGNeNxp-VRElw" image="__hiPoxZgEfGNeNxp-VRElw"/>
+    <mappings xmi:id="__hiPsRZgEfGNeNxp-VRElw" origin="__hiPlhZgEfGNeNxp-VRElw" image="__hiPpBZgEfGNeNxp-VRElw"/>
+    <mappings xmi:id="__hiPshZgEfGNeNxp-VRElw" origin="__hiPlxZgEfGNeNxp-VRElw" image="__hiPpRZgEfGNeNxp-VRElw"/>
+  </units>
+  <units xsi:type="henshin:Rule" xmi:id="__hiPsxZgEfGNeNxp-VRElw" name="PluginDrive_Exe" description="=== HenshinRuleModifier Output ===&#xA;Source rule: PluginDrive&#xA;&#xA;[Rule-Split]&#xA;  Source rule: PluginDrive&#xA;  Marker type: (none)&#xA;&#xA;  --- Obs Rule ---&#xA;  LHS: same as original&#xA;  RHS: copy of LHS (no side effects)&#xA;  Renamed to: PluginDrive_Obs&#xA;&#xA;  --- Exe Rule ---&#xA;  LHS: original LHS (+ marker if selected)&#xA;  RHS: original RHS (marker deleted if selected)&#xA;  Renamed to: PluginDrive_Exe&#xA;&#xA;  Output: 2 rules in one module (PluginDrive_Obs + PluginDrive_Exe)&#xA;&#xA;">
+    <parameters xmi:id="__hiPtBZgEfGNeNxp-VRElw" name="x">
+      <type xsi:type="ecore:EClass" href="../models/ecoreModel.ecore#//Shuttle"/>
+    </parameters>
+    <parameters xmi:id="__hiPtRZgEfGNeNxp-VRElw" name="t1">
+      <type xsi:type="ecore:EClass" href="../models/ecoreModel.ecore#//Track"/>
+    </parameters>
+    <parameters xmi:id="__hiPthZgEfGNeNxp-VRElw" name="t2">
+      <type xsi:type="ecore:EClass" href="../models/ecoreModel.ecore#//Track"/>
+    </parameters>
+    <lhs xmi:id="__hiPtxZgEfGNeNxp-VRElw" name="Lhs">
+      <nodes xmi:id="__hiPuBZgEfGNeNxp-VRElw" name="root" outgoing="__hiPvhZgEfGNeNxp-VRElw __hiPvxZgEfGNeNxp-VRElw __hiPwBZgEfGNeNxp-VRElw __hiPwRZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Model"/>
+      </nodes>
+      <nodes xmi:id="__hiPuRZgEfGNeNxp-VRElw" name="t1" incoming="__hiPvhZgEfGNeNxp-VRElw __hiPxBZgEfGNeNxp-VRElw" outgoing="__hiPwhZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="__hiPuhZgEfGNeNxp-VRElw" name="t2" incoming="__hiPvxZgEfGNeNxp-VRElw __hiPwhZgEfGNeNxp-VRElw" outgoing="__hiPwxZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="__hiPuxZgEfGNeNxp-VRElw" name="t3" incoming="__hiPwBZgEfGNeNxp-VRElw __hiPwxZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="__hiPvBZgEfGNeNxp-VRElw" name="x" incoming="__hiPwRZgEfGNeNxp-VRElw" outgoing="__hiPxBZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Shuttle"/>
+        <attributes xmi:id="__hiPvRZgEfGNeNxp-VRElw" value="DRIVE">
+          <type href="../models/ecoreModel.ecore#//Shuttle/mode"/>
+        </attributes>
+      </nodes>
+      <edges xmi:id="__hiPvhZgEfGNeNxp-VRElw" source="__hiPuBZgEfGNeNxp-VRElw" target="__hiPuRZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="__hiPvxZgEfGNeNxp-VRElw" source="__hiPuBZgEfGNeNxp-VRElw" target="__hiPuhZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="__hiPwBZgEfGNeNxp-VRElw" source="__hiPuBZgEfGNeNxp-VRElw" target="__hiPuxZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="__hiPwRZgEfGNeNxp-VRElw" source="__hiPuBZgEfGNeNxp-VRElw" target="__hiPvBZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Model/shuttles"/>
+      </edges>
+      <edges xmi:id="__hiPwhZgEfGNeNxp-VRElw" source="__hiPuRZgEfGNeNxp-VRElw" target="__hiPuhZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="__hiPwxZgEfGNeNxp-VRElw" source="__hiPuhZgEfGNeNxp-VRElw" target="__hiPuxZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="__hiPxBZgEfGNeNxp-VRElw" source="__hiPvBZgEfGNeNxp-VRElw" target="__hiPuRZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Shuttle/at"/>
+      </edges>
+    </lhs>
+    <rhs xmi:id="__hiPxRZgEfGNeNxp-VRElw" name="Rhs">
+      <nodes xmi:id="__hiPxhZgEfGNeNxp-VRElw" name="root" outgoing="__hiPzBZgEfGNeNxp-VRElw __hiPzRZgEfGNeNxp-VRElw __hiPzhZgEfGNeNxp-VRElw __hiPzxZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Model"/>
+      </nodes>
+      <nodes xmi:id="__hiPxxZgEfGNeNxp-VRElw" name="t1" incoming="__hiPzBZgEfGNeNxp-VRElw" outgoing="__hiP0BZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="__hiPyBZgEfGNeNxp-VRElw" name="t2" incoming="__hiPzRZgEfGNeNxp-VRElw __hiP0BZgEfGNeNxp-VRElw __hiP0hZgEfGNeNxp-VRElw" outgoing="__hiP0RZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="__hiPyRZgEfGNeNxp-VRElw" name="t3" incoming="__hiPzhZgEfGNeNxp-VRElw __hiP0RZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Track"/>
+      </nodes>
+      <nodes xmi:id="__hiPyhZgEfGNeNxp-VRElw" name="x" incoming="__hiPzxZgEfGNeNxp-VRElw" outgoing="__hiP0hZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Shuttle"/>
+        <attributes xmi:id="__hiPyxZgEfGNeNxp-VRElw" value="DRIVE">
+          <type href="../models/ecoreModel.ecore#//Shuttle/mode"/>
+        </attributes>
+      </nodes>
+      <edges xmi:id="__hiPzBZgEfGNeNxp-VRElw" source="__hiPxhZgEfGNeNxp-VRElw" target="__hiPxxZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="__hiPzRZgEfGNeNxp-VRElw" source="__hiPxhZgEfGNeNxp-VRElw" target="__hiPyBZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="__hiPzhZgEfGNeNxp-VRElw" source="__hiPxhZgEfGNeNxp-VRElw" target="__hiPyRZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Model/tracks"/>
+      </edges>
+      <edges xmi:id="__hiPzxZgEfGNeNxp-VRElw" source="__hiPxhZgEfGNeNxp-VRElw" target="__hiPyhZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Model/shuttles"/>
+      </edges>
+      <edges xmi:id="__hiP0BZgEfGNeNxp-VRElw" source="__hiPxxZgEfGNeNxp-VRElw" target="__hiPyBZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="__hiP0RZgEfGNeNxp-VRElw" source="__hiPyBZgEfGNeNxp-VRElw" target="__hiPyRZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Track/next"/>
+      </edges>
+      <edges xmi:id="__hiP0hZgEfGNeNxp-VRElw" source="__hiPyhZgEfGNeNxp-VRElw" target="__hiPyBZgEfGNeNxp-VRElw">
+        <type href="../models/ecoreModel.ecore#//Shuttle/at"/>
+      </edges>
+    </rhs>
+    <mappings xmi:id="__hiP0xZgEfGNeNxp-VRElw" origin="__hiPuBZgEfGNeNxp-VRElw" image="__hiPxhZgEfGNeNxp-VRElw"/>
+    <mappings xmi:id="__hiP1BZgEfGNeNxp-VRElw" origin="__hiPuRZgEfGNeNxp-VRElw" image="__hiPxxZgEfGNeNxp-VRElw"/>
+    <mappings xmi:id="__hiP1RZgEfGNeNxp-VRElw" origin="__hiPuhZgEfGNeNxp-VRElw" image="__hiPyBZgEfGNeNxp-VRElw"/>
+    <mappings xmi:id="__hiP1hZgEfGNeNxp-VRElw" origin="__hiPuxZgEfGNeNxp-VRElw" image="__hiPyRZgEfGNeNxp-VRElw"/>
+    <mappings xmi:id="__hiP1xZgEfGNeNxp-VRElw" origin="__hiPvBZgEfGNeNxp-VRElw" image="__hiPyhZgEfGNeNxp-VRElw"/>
+  </units>
+</henshin:Module>
