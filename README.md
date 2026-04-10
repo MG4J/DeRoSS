@@ -1,4 +1,5 @@
-# DeRoSS — **De**lay-**Ro**bustne**SS**
+
+# DeRoSS : **De**lay-**Ro**bustne**SS** with Timed Graph Transformation System Models
 
 DeRoSS is an [Eclipse Modeling Framework (EMF)](https://eclipse.dev/emf/) plugin that uses the in-place model transformation language [Eclipse Henshin](https://eclipse.dev/henshin/) to derive delay-robust Timed Graph Transformation System (TGTS) rules from non-delay-robust ones.
 
