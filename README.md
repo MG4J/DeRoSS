@@ -8,8 +8,8 @@ DeRoSS implements the techniques presented in:
 
 - M. Ghani, S. Schneider, M. Maximova, and H. Giese. [Deriving Delay-Robust Timed Graph Transformation System Models](https://link.springer.com/chapter/10.1007/978-3-031-64285-2_9). In: Graph Transformation (International Conference on Graph Transformation, ICGT 2024), Springer, 2024, pp. 158–179.
 
-- M. Ghani and H. Giese. *Modeling and Analyzing Planning-Aware Distributed Cyber-Physical Systems with Timed Graph Transformation Systems.* To appear in [FASE 2026, ETAPS 2026](https://etaps.org/2026/conferences/fase/).
-
+- M. Ghani and H. Giese. [Modeling and Analyzing Planning-Aware Distributed Cyber-Physical Systems with Timed Graph Transformation Systems](https://link.springer.com/chapter/10.1007/978-3-032-22774-4_17). In Fundamental Approaches to Software Engineering (International Conference on Fundamental Approaches to Software Engineering, FASE 2026), Springer, 2026, pp. 327–347.
+  
 - M. Ghani and H. Giese. *Towards Delay-Robust Models for Engineering Smart Systems of Systems: Challenges, Innovations, and Future Directions.* To appear in: B. Tekinerdogan and K. Drira (eds.), [System of Systems Engineering: Innovations, Challenges, and Future Directions](https://easychair.org/cfp/SoSE-2025). Elsevier (Academic Press), 2026.
 
 ### Running Example
